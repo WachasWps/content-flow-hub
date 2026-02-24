@@ -1,4 +1,4 @@
-import { CalendarDays, LayoutGrid, Settings, LogOut, User } from "lucide-react";
+import { CalendarDays, Settings, LogOut, User } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 
 const navItems = [
   { to: "/", icon: CalendarDays, label: "Calendar" },
-  { to: "/board", icon: LayoutGrid, label: "Board" },
   { to: "/settings", icon: Settings, label: "Settings" },
 ];
 
