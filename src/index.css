@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -81,7 +81,11 @@
     --sidebar-border: 33 35% 78%;
     --sidebar-ring: 18 63% 47%;
 
-    font-family: 'Inter', system-ui, sans-serif;
+    /* Extra palette tokens */
+    --warm-white: 40 60% 97%;
+    --moss: 105 18% 32%;
+
+    font-family: 'DM Sans', system-ui, sans-serif;
   }
 
   .dark {
@@ -120,6 +124,9 @@
     --pop-yellow: 30 70% 48%;
     --pop-orange: 18 58% 48%;
 
+    --warm-white: 22 20% 14%;
+    --moss: 105 18% 32%;
+
     --sidebar-background: 22 20% 12%;
     --sidebar-foreground: 39 50% 90%;
     --sidebar-primary: 18 63% 52%;
@@ -138,10 +145,16 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23C4622D' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-    @apply font-bold;
+    font-family: 'Playfair Display', serif;
+    @apply font-semibold;
   }
 }
+
+/* Utility font classes */
+.font-serif-display { font-family: 'Playfair Display', serif; }
+.font-serif-body { font-family: 'Lora', serif; }
+.font-sans { font-family: 'DM Sans', sans-serif; }

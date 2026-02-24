@@ -108,10 +108,9 @@ export default function NewPostDialog({ defaultDate, onCreated }: NewPostDialogP
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Post
-        </Button>
+        <button className="flex items-center gap-1.5 bg-primary text-primary-foreground border-none px-5 py-2.5 rounded-lg text-[13px] font-semibold cursor-pointer font-sans transition-all shadow-[0_2px_8px_hsl(18_63%_47%/0.25)] hover:-translate-y-px hover:shadow-[0_4px_16px_hsl(18_63%_47%/0.35)]">
+          ＋ New Post
+        </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
