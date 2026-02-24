@@ -13,12 +13,16 @@ import {
   subMonths,
   getDay,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Share2, MessageCircle, Link as LinkIcon, Check, Copy } from "lucide-react";
+import html2canvas from "html2canvas";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import NewPostDialog from "@/components/NewPostDialog";
 import PostDetailDialog from "@/components/PostDetailDialog";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { Tables } from "@/integrations/supabase/types";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -45,6 +49,10 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedPost, setSelectedPost] = useState<Tables<"posts"> | null>(null);
   const [view, setView] = useState<"month" | "week">("month");
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -93,6 +101,55 @@ export default function CalendarPage() {
 
   const quotes = ["plan something ✦", "rest ◦", "create freely", "brainstorm ✧", "breathe ◌"];
 
+  const handleCreateShareLink = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("shared_calendars")
+      .insert({ created_by: user.id, label: format(currentDate, "MMMM yyyy") + " Calendar" })
+      .select("token")
+      .single();
+    if (error) {
+      toast({ title: "Failed to create share link", variant: "destructive" });
+      return;
+    }
+    const link = `${window.location.origin}/shared?token=${data.token}`;
+    setShareLink(link);
+  };
+
+  const handleCopyShareLink = () => {
+    if (!shareLink) return;
+    navigator.clipboard.writeText(shareLink);
+    setShareCopied(true);
+    toast({ title: "Link copied!" });
+    setTimeout(() => setShareCopied(false), 2000);
+  };
+
+  const handleWhatsAppShare = async () => {
+    const calendarEl = document.getElementById("calendar-grid");
+    if (!calendarEl) return;
+    toast({ title: "Generating screenshot…" });
+    try {
+      const canvas = await html2canvas(calendarEl, { backgroundColor: "#F5EDD8", scale: 2 });
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const text = `📅 Content Calendar — ${format(currentDate, "MMMM yyyy")}\nShared via Caly`;
+        // Try native share with image if available
+        if (navigator.share && navigator.canShare) {
+          const file = new File([blob], "calendar.png", { type: "image/png" });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ text, files: [file] });
+            return;
+          }
+        }
+        // Fallback: open WhatsApp with text
+        const waUrl = `https://wa.me/?text=${encodeURIComponent(text + (shareLink ? `\n${shareLink}` : ""))}`;
+        window.open(waUrl, "_blank");
+      }, "image/png");
+    } catch {
+      toast({ title: "Failed to capture calendar", variant: "destructive" });
+    }
+  };
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Topbar */}
@@ -116,6 +173,50 @@ export default function CalendarPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Share popover */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="flex h-9 items-center gap-2 rounded-lg border border-[hsl(var(--sand))] px-3 text-[12px] font-medium text-muted-foreground transition-all hover:border-primary hover:text-primary">
+                <Share2 className="h-3.5 w-3.5" />
+                Share
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 p-3 space-y-3" align="end">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Share Calendar</p>
+              
+              {!shareLink ? (
+                <button
+                  onClick={handleCreateShareLink}
+                  className="flex w-full items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-[13px] font-medium transition-colors hover:bg-card"
+                >
+                  <LinkIcon className="h-4 w-4 text-primary" />
+                  Generate public link
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 rounded-lg border bg-card px-2 py-1.5">
+                    <input
+                      readOnly
+                      value={shareLink}
+                      className="flex-1 bg-transparent text-[11px] text-foreground outline-none truncate"
+                    />
+                    <button onClick={handleCopyShareLink} className="shrink-0 p-1 rounded hover:bg-muted">
+                      {shareCopied ? <Check className="h-3.5 w-3.5 text-pop-green" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={handleWhatsAppShare}
+                className="flex w-full items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-[13px] font-medium transition-colors hover:bg-card"
+              >
+                <MessageCircle className="h-4 w-4 text-pop-green" />
+                Share on WhatsApp
+              </button>
+            </PopoverContent>
+          </Popover>
+
           {/* View toggle */}
           <div className="flex rounded-lg border border-[hsl(var(--sand))] bg-[hsl(var(--card))] p-[3px]">
             <button
@@ -152,7 +253,7 @@ export default function CalendarPage() {
       {/* Calendar content */}
       <div className="flex-1 overflow-y-auto p-6 px-8">
         {view === "month" ? (
-          <>
+          <div id="calendar-grid">
             {/* Day headers */}
             <div className="grid grid-cols-7 gap-1.5 mb-1.5">
               {WEEKDAYS.map((day) => (
@@ -257,7 +358,7 @@ export default function CalendarPage() {
                 );
               })}
             </div>
-          </>
+          </div>
         ) : (
           /* Week View */
           <div className="rounded-[14px] border-[1.5px] border-[hsl(var(--sand))] overflow-hidden bg-[hsl(var(--warm-white))]">

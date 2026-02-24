@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserPlus, Shield, Clock, CheckCircle, XCircle } from "lucide-react";
+import { UserPlus, Shield, Clock, CheckCircle, XCircle, Link as LinkIcon, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +7,8 @@ import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/lib/auth";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const roleConfig: Record<string, { label: string; bg: string }> = {
   admin: { label: "Admin", bg: "bg-primary/15 text-primary" },
@@ -19,7 +21,10 @@ const avatarColors = ["bg-primary/20", "bg-pop-pink/20", "bg-pop-blue/20", "bg-p
 
 export default function MembersPage() {
   const [roleFilter, setRoleFilter] = useState("all");
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [inviteCopied, setInviteCopied] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const { data: members = [], refetch: refetchMembers } = useQuery({
     queryKey: ["members"],
@@ -80,6 +85,28 @@ export default function MembersPage() {
     refetchPending();
     refetchMembers();
   };
+  const handleCreateInvite = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("invite_tokens")
+      .insert({ created_by: user.id })
+      .select("token")
+      .single();
+    if (error) {
+      toast({ title: "Failed to create invite", variant: "destructive" });
+      return;
+    }
+    const link = `${window.location.origin}/invite?token=${data.token}`;
+    setInviteLink(link);
+  };
+
+  const handleCopyInvite = () => {
+    if (!inviteLink) return;
+    navigator.clipboard.writeText(inviteLink);
+    setInviteCopied(true);
+    toast({ title: "Invite link copied!" });
+    setTimeout(() => setInviteCopied(false), 2000);
+  };
 
   const filtered = roleFilter === "all" ? members.filter(m => m.isApproved) : members.filter((m) => m.isApproved && m.roles.includes(roleFilter as any));
 
@@ -98,6 +125,40 @@ export default function MembersPage() {
               <SelectItem value="social_media_manager">SM Manager</SelectItem>
             </SelectContent>
           </Select>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-[13px] font-semibold transition-all shadow-[0_2px_8px_hsl(18_63%_47%/0.25)] hover:-translate-y-px">
+                <UserPlus className="h-4 w-4" />
+                Invite Member
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 p-3 space-y-3" align="end">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Invite Link</p>
+              {!inviteLink ? (
+                <button
+                  onClick={handleCreateInvite}
+                  className="flex w-full items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-[13px] font-medium transition-colors hover:bg-card"
+                >
+                  <LinkIcon className="h-4 w-4 text-primary" />
+                  Generate invite link
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 rounded-lg border bg-card px-2 py-1.5">
+                    <input readOnly value={inviteLink} className="flex-1 bg-transparent text-[11px] text-foreground outline-none truncate" />
+                    <button onClick={handleCopyInvite} className="shrink-0 p-1 rounded hover:bg-muted">
+                      {inviteCopied ? <Check className="h-3.5 w-3.5 text-pop-green" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Expires in 7 days. Anyone with this link can join.</p>
+                  <button onClick={handleCreateInvite} className="text-[11px] text-primary font-medium hover:underline">
+                    Generate new link
+                  </button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
