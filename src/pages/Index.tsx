@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import NewPostDialog from "@/components/NewPostDialog";
+import PostDetailDialog from "@/components/PostDetailDialog";
 import type { Tables } from "@/integrations/supabase/types";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -56,6 +57,7 @@ const platformLabels: Record<string, string> = {
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedPost, setSelectedPost] = useState<Tables<"posts"> | null>(null);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -177,7 +179,11 @@ export default function CalendarPage() {
                   {inMonth && dayPosts.length > 0 && (
                     <div className="mt-1.5 space-y-0.5">
                       {dayPosts.slice(0, 2).map((p) => (
-                        <p key={p.id} className="truncate text-xs font-semibold text-foreground/80">
+                        <p
+                          key={p.id}
+                          onClick={(e) => { e.stopPropagation(); setSelectedPost(p); }}
+                          className="cursor-pointer truncate rounded px-1 text-xs font-semibold text-foreground/80 transition-colors hover:text-primary hover:bg-primary/5"
+                        >
                           {p.title}
                         </p>
                       ))}
@@ -211,6 +217,12 @@ export default function CalendarPage() {
           </div>
         )}
       </div>
+
+      <PostDetailDialog
+        post={selectedPost}
+        open={!!selectedPost}
+        onOpenChange={(open) => { if (!open) setSelectedPost(null); }}
+      />
     </div>
   );
 }
