@@ -6,8 +6,11 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import AppLayout from "@/components/AppLayout";
 import Index from "./pages/Index";
-
-
+import Posts from "./pages/Posts";
+import Drafts from "./pages/Drafts";
+import Analytics from "./pages/Analytics";
+import Members from "./pages/Members";
+import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
@@ -40,7 +43,11 @@ const App = () => (
             <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/" element={<Index />} />
-              
+              <Route path="/posts" element={<Posts />} />
+              <Route path="/drafts" element={<Drafts />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/members" element={<Members />} />
+              <Route path="/settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
