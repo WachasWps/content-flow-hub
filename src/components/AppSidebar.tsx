@@ -1,12 +1,12 @@
-import { CalendarDays, Settings, LogOut, User } from "lucide-react";
+import { CalendarDays, LogOut, User } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import calyLogo from "@/assets/caly-logo.png";
 
 const navItems = [
   { to: "/", icon: CalendarDays, label: "Calendar" },
-  { to: "/settings", icon: Settings, label: "Settings" },
 ];
 
 export default function AppSidebar() {
@@ -16,10 +16,7 @@ export default function AppSidebar() {
   return (
     <aside className="flex h-screen w-[240px] flex-col border-r bg-sidebar">
       <div className="flex items-center gap-2.5 px-5 py-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent shadow-md shadow-primary/20">
-          <CalendarDays className="h-4 w-4 text-primary-foreground" />
-        </div>
-        <span className="text-base font-bold text-sidebar-foreground">ContentCal</span>
+        <img src={calyLogo} alt="Caly logo" className="h-8 w-auto dark:invert" />
       </div>
 
       <nav className="flex-1 space-y-0.5 px-3 py-2">
