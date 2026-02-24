@@ -1,4 +1,4 @@
-import { CalendarDays, FileText, Sparkles, BarChart3, Tag, Users, LogOut, User } from "lucide-react";
+import { CalendarDays, FileText, Sparkles, BarChart3, Settings, Users, LogOut, User } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -6,17 +6,17 @@ import { Button } from "@/components/ui/button";
 
 const workspaceItems = [
   { to: "/", icon: CalendarDays, label: "Calendar", emoji: "📅" },
-  { to: "#posts", icon: FileText, label: "Posts", emoji: "📋" },
-  { to: "#drafts", icon: Sparkles, label: "Drafts", emoji: "✦" },
+  { to: "/posts", icon: FileText, label: "Posts", emoji: "📋" },
+  { to: "/drafts", icon: Sparkles, label: "Drafts", emoji: "✦" },
 ];
 
 const insightItems = [
-  { to: "#analytics", icon: BarChart3, label: "Analytics", emoji: "📈" },
-  { to: "#tags", icon: Tag, label: "Tags", emoji: "🏷" },
+  { to: "/analytics", icon: BarChart3, label: "Analytics", emoji: "📈" },
 ];
 
 const teamItems = [
-  { to: "#members", icon: Users, label: "Members", emoji: "👤" },
+  { to: "/members", icon: Users, label: "Members", emoji: "👤" },
+  { to: "/settings", icon: Settings, label: "Settings", emoji: "⚙️" },
 ];
 
 const platformFilters = [
@@ -35,7 +35,7 @@ function NavSection({ label, items }: { label: string; items: typeof workspaceIt
         {label}
       </div>
       {items.map(({ to, label, emoji }) => {
-        const isActive = to === "/" ? location.pathname === "/" : false;
+        const isActive = to === "/" ? location.pathname === "/" : location.pathname === to;
         return (
           <NavLink
             key={to}
