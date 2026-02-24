@@ -13,21 +13,36 @@ import Members from "./pages/Members";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import Landing from "./pages/Landing";
+import PendingApproval from "./pages/PendingApproval";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="flex h-screen items-center justify-center text-muted-foreground">Loading…</div>;
+  const { user, loading, isApproved } = useAuth();
+  if (loading || (user && isApproved === null)) {
+    return <div className="flex h-screen items-center justify-center text-muted-foreground">Loading…</div>;
+  }
   if (!user) return <Navigate to="/auth" replace />;
+  if (!isApproved) return <Navigate to="/pending" replace />;
   return <>{children}</>;
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, isApproved } = useAuth();
   if (loading) return <div className="flex h-screen items-center justify-center text-muted-foreground">Loading…</div>;
-  if (user) return <Navigate to="/" replace />;
+  if (user && isApproved) return <Navigate to="/" replace />;
+  if (user && !isApproved) return <Navigate to="/pending" replace />;
+  return <>{children}</>;
+}
+
+function PendingRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading, isApproved } = useAuth();
+  if (loading || (user && isApproved === null)) {
+    return <div className="flex h-screen items-center justify-center text-muted-foreground">Loading…</div>;
+  }
+  if (!user) return <Navigate to="/auth" replace />;
+  if (isApproved) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -41,6 +56,7 @@ const App = () => (
           <Routes>
             <Route path="/landing" element={<Landing />} />
             <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+            <Route path="/pending" element={<PendingRoute><PendingApproval /></PendingRoute>} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/" element={<Index />} />
               <Route path="/posts" element={<Posts />} />
