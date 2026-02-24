@@ -201,7 +201,7 @@ export default function CalendarPage() {
                     {/* Posts */}
                     {inMonth && dayPosts.length > 0 && (
                       <div className="flex-1 space-y-1">
-                        {dayPosts.slice(0, 2).map((p) => {
+                    {dayPosts.slice(0, 2).map((p) => {
                           const plat = platformConfig[p.platform];
                           const stat = statusConfig[p.status];
                           return (
@@ -211,34 +211,26 @@ export default function CalendarPage() {
                                 e.stopPropagation();
                                 setSelectedPost(p);
                               }}
-                              className="rounded-[7px] overflow-hidden bg-card cursor-pointer transition-transform hover:scale-[1.02]"
+                              className="flex items-center gap-1.5 rounded-md bg-card px-1.5 py-1 cursor-pointer transition-all hover:shadow-sm hover:bg-card/80"
                             >
-                              {/* Colored bar + platform badge */}
-                              <div
-                                className="relative w-full aspect-[4/3] flex items-center justify-center text-2xl"
-                                style={{ background: `linear-gradient(135deg, hsl(var(--card)), hsl(var(--background)))` }}
+                              {/* Status pill */}
+                              <span
+                                className={cn(
+                                  "shrink-0 text-[7px] px-1.5 py-[1px] rounded-full font-semibold uppercase tracking-wide",
+                                  stat?.bg
+                                )}
                               >
-                                <span>{plat?.icon || "📄"}</span>
-                                {/* Platform badge */}
-                                <div
-                                  className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] shadow-[0_1px_4px_rgba(0,0,0,0.2)]"
-                                  style={{ background: plat?.color }}
-                                >
-                                  {plat?.icon || "📄"}
-                                </div>
-                                {/* Status dot */}
-                                <div
-                                  className={cn(
-                                    "absolute bottom-1 left-1 text-[8px] px-1.5 py-0.5 rounded-[10px] font-semibold tracking-[0.05em] uppercase",
-                                    stat?.bg
-                                  )}
-                                >
-                                  {stat?.label || p.status}
-                                </div>
-                              </div>
-                              <div className="text-[9.5px] font-medium text-foreground truncate px-1.5 py-1">
+                                {stat?.label}
+                              </span>
+                              {/* Platform dot */}
+                              <div
+                                className="shrink-0 w-[6px] h-[6px] rounded-full"
+                                style={{ background: plat?.color }}
+                              />
+                              {/* Title */}
+                              <span className="text-[9px] font-medium text-foreground truncate">
                                 {p.title}
-                              </div>
+                              </span>
                             </div>
                           );
                         })}
