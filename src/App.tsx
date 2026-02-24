@@ -33,7 +33,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, isApproved } = useAuth();
   if (loading) return <div className="flex h-screen items-center justify-center text-muted-foreground">Loading…</div>;
-  if (user && isApproved) return <Navigate to="/" replace />;
+  if (user && isApproved) return <Navigate to="/dashboard" replace />;
   if (user && !isApproved) return <Navigate to="/pending" replace />;
   return <>{children}</>;
 }
@@ -44,7 +44,7 @@ function PendingRoute({ children }: { children: React.ReactNode }) {
     return <div className="flex h-screen items-center justify-center text-muted-foreground">Loading…</div>;
   }
   if (!user) return <Navigate to="/auth" replace />;
-  if (isApproved) return <Navigate to="/" replace />;
+  if (isApproved) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
 
@@ -56,13 +56,13 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/landing" element={<Landing />} />
+            <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
             <Route path="/pending" element={<PendingRoute><PendingApproval /></PendingRoute>} />
             <Route path="/shared" element={<SharedCalendar />} />
             <Route path="/invite" element={<InviteSignup />} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-              <Route path="/" element={<Index />} />
+              <Route path="/dashboard" element={<Index />} />
               <Route path="/posts" element={<Posts />} />
               <Route path="/drafts" element={<Drafts />} />
               <Route path="/analytics" element={<Analytics />} />
