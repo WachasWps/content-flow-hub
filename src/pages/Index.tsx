@@ -130,20 +130,39 @@ export default function CalendarPage() {
     toast({ title: "Generating screenshot…" });
     try {
       const canvas = await html2canvas(calendarEl, { backgroundColor: "#F5EDD8", scale: 2 });
+      const message = `📅 Content Calendar — ${format(currentDate, "MMMM yyyy")}\nShared via Caly${shareLink ? `\n${shareLink}` : ""}`;
+
       canvas.toBlob(async (blob) => {
         if (!blob) return;
-        const text = `📅 Content Calendar — ${format(currentDate, "MMMM yyyy")}\nShared via Caly`;
-        // Try native share with image if available
-        if (navigator.share && navigator.canShare) {
-          const file = new File([blob], "calendar.png", { type: "image/png" });
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({ text, files: [file] });
-            return;
-          }
+
+        try {
+          // Copy image to clipboard
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob }),
+          ]);
+          toast({
+            title: "📸 Screenshot copied to clipboard!",
+            description: "Paste the image in WhatsApp. Message will be copied next.",
+          });
+        } catch {
+          // Fallback: download the image
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `caly-calendar-${format(currentDate, "yyyy-MM")}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+          toast({
+            title: "📸 Image downloaded!",
+            description: "Attach it in WhatsApp. Message copied to clipboard.",
+          });
         }
-        // Fallback: open WhatsApp with text
-        const waUrl = `https://wa.me/?text=${encodeURIComponent(text + (shareLink ? `\n${shareLink}` : ""))}`;
-        window.open(waUrl, "_blank");
+
+        // Copy message text after a short delay so user gets both
+        setTimeout(async () => {
+          await navigator.clipboard.writeText(message);
+          toast({ title: "💬 Message copied!", description: "Paste it in WhatsApp along with the image." });
+        }, 2500);
       }, "image/png");
     } catch {
       toast({ title: "Failed to capture calendar", variant: "destructive" });
