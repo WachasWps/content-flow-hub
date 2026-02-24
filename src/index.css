@@ -6,113 +6,128 @@
 
 @layer base {
   :root {
-    --background: 220 30% 98%;
-    --foreground: 222 47% 11%;
+    /* Parchment #F5EDD8 */
+    --background: 39 66% 90%;
+    /* Ink #2B2118 */
+    --foreground: 22 31% 13%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    /* Cream #EDE0C4 */
+    --card: 37 55% 85%;
+    --card-foreground: 22 31% 13%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 37 55% 85%;
+    --popover-foreground: 22 31% 13%;
 
-    --primary: 330 80% 60%;
-    --primary-foreground: 0 0% 100%;
+    /* Terracotta #C4622D */
+    --primary: 18 63% 47%;
+    --primary-foreground: 39 66% 95%;
 
-    --secondary: 220 40% 95%;
-    --secondary-foreground: 222 47% 11%;
+    /* Sand-light */
+    --secondary: 33 42% 82%;
+    --secondary-foreground: 22 31% 13%;
 
-    --muted: 220 30% 95%;
-    --muted-foreground: 220 15% 50%;
+    --muted: 37 40% 88%;
+    /* Stone #8C7B6A */
+    --muted-foreground: 30 15% 48%;
 
-    --accent: 215 90% 58%;
+    /* Sky #5BB4D8 */
+    --accent: 197 60% 60%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    /* Rose #E8436E */
+    --destructive: 345 78% 59%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 92%;
-    --input: 220 20% 92%;
-    --ring: 330 80% 60%;
+    /* Sand border */
+    --border: 33 35% 78%;
+    --input: 33 35% 78%;
+    --ring: 18 63% 47%;
 
     --radius: 0.75rem;
 
     /* Status colors */
-    --status-idea: 215 90% 58%;
-    --status-editing: 40 90% 52%;
-    --status-review: 275 70% 58%;
-    --status-ready: 152 60% 48%;
-    --status-posted: 220 10% 52%;
+    --status-idea: 197 60% 60%;
+    /* Amber #E08A2F */
+    --status-editing: 30 75% 53%;
+    /* Periwinkle #6E88E0 */
+    --status-review: 226 64% 65%;
+    /* Sage #7A8C6E */
+    --status-ready: 100 12% 49%;
+    --status-posted: 30 15% 48%;
 
     /* Platform colors */
-    --platform-instagram: 330 80% 55%;
-    --platform-youtube: 0 85% 55%;
-    --platform-linkedin: 210 80% 45%;
-    --platform-twitter: 200 85% 50%;
+    /* Blush #F2749A */
+    --platform-instagram: 342 84% 70%;
+    --platform-youtube: 345 78% 59%;
+    /* Periwinkle */
+    --platform-linkedin: 226 64% 65%;
+    /* Sky */
+    --platform-twitter: 197 60% 60%;
 
     /* Pop accent palette */
-    --pop-pink: 330 80% 60%;
-    --pop-blue: 215 90% 58%;
-    --pop-purple: 275 70% 58%;
-    --pop-green: 152 60% 48%;
-    --pop-yellow: 40 90% 52%;
-    --pop-orange: 20 90% 58%;
+    --pop-pink: 342 84% 70%;
+    --pop-blue: 197 60% 60%;
+    --pop-purple: 226 64% 65%;
+    --pop-green: 100 12% 49%;
+    --pop-yellow: 30 75% 53%;
+    --pop-orange: 18 63% 47%;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 330 80% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 330 80% 97%;
-    --sidebar-accent-foreground: 330 80% 40%;
-    --sidebar-border: 220 20% 92%;
-    --sidebar-ring: 330 80% 60%;
+    --sidebar-background: 37 55% 85%;
+    --sidebar-foreground: 22 31% 13%;
+    --sidebar-primary: 18 63% 47%;
+    --sidebar-primary-foreground: 39 66% 95%;
+    --sidebar-accent: 39 60% 88%;
+    --sidebar-accent-foreground: 18 63% 37%;
+    --sidebar-border: 33 35% 78%;
+    --sidebar-ring: 18 63% 47%;
 
     font-family: 'Inter', system-ui, sans-serif;
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 220 30% 95%;
+    --background: 22 25% 10%;
+    --foreground: 39 50% 90%;
 
-    --card: 222 40% 10%;
-    --card-foreground: 220 30% 95%;
+    --card: 22 20% 14%;
+    --card-foreground: 39 50% 90%;
 
-    --popover: 222 40% 10%;
-    --popover-foreground: 220 30% 95%;
+    --popover: 22 20% 14%;
+    --popover-foreground: 39 50% 90%;
 
-    --primary: 330 75% 62%;
+    --primary: 18 63% 52%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 30% 15%;
-    --secondary-foreground: 220 30% 95%;
+    --secondary: 22 20% 18%;
+    --secondary-foreground: 39 50% 90%;
 
-    --muted: 222 30% 15%;
-    --muted-foreground: 220 15% 55%;
+    --muted: 22 20% 18%;
+    --muted-foreground: 30 15% 55%;
 
-    --accent: 215 85% 55%;
+    --accent: 197 55% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62% 45%;
+    --destructive: 345 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 30% 16%;
-    --input: 222 30% 16%;
-    --ring: 330 75% 62%;
+    --border: 22 20% 20%;
+    --input: 22 20% 20%;
+    --ring: 18 63% 52%;
 
-    --pop-pink: 330 75% 58%;
-    --pop-blue: 215 85% 55%;
-    --pop-purple: 275 65% 55%;
-    --pop-green: 152 55% 45%;
-    --pop-yellow: 40 85% 50%;
-    --pop-orange: 20 85% 55%;
+    --pop-pink: 342 75% 65%;
+    --pop-blue: 197 55% 50%;
+    --pop-purple: 226 55% 58%;
+    --pop-green: 100 12% 42%;
+    --pop-yellow: 30 70% 48%;
+    --pop-orange: 18 58% 48%;
 
-    --sidebar-background: 222 40% 8%;
-    --sidebar-foreground: 220 30% 95%;
-    --sidebar-primary: 330 75% 62%;
+    --sidebar-background: 22 20% 12%;
+    --sidebar-foreground: 39 50% 90%;
+    --sidebar-primary: 18 63% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 330 50% 12%;
-    --sidebar-accent-foreground: 330 75% 75%;
-    --sidebar-border: 222 30% 16%;
-    --sidebar-ring: 330 75% 62%;
+    --sidebar-accent: 22 25% 16%;
+    --sidebar-accent-foreground: 18 50% 70%;
+    --sidebar-border: 22 20% 20%;
+    --sidebar-ring: 18 63% 52%;
   }
 }
 
