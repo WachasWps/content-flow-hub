@@ -70,6 +70,14 @@ export default {
           linkedin: "hsl(var(--platform-linkedin))",
           twitter: "hsl(var(--platform-twitter))",
         },
+        pop: {
+          pink: "hsl(var(--pop-pink))",
+          orange: "hsl(var(--pop-orange))",
+          yellow: "hsl(var(--pop-yellow))",
+          green: "hsl(var(--pop-green))",
+          blue: "hsl(var(--pop-blue))",
+          purple: "hsl(var(--pop-purple))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
