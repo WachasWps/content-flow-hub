@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, LayoutGrid, Users, Zap, ArrowRight, Check } from "lucide-react";
 import calyLogo from "@/assets/caly-logo.png";
@@ -45,14 +44,9 @@ export default function Landing() {
         <div className="flex items-center gap-2.5">
           <img src={calyLogo} alt="Caly logo" className="h-9 w-auto dark:invert" />
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/auth">Log in</Link>
-          </Button>
-          <Button size="sm" className="shadow-md shadow-primary/20" asChild>
-            <Link to="/auth">Get Started</Link>
-          </Button>
-        </div>
+        <Button variant="outline" size="sm" asChild>
+          <a href="mailto:digicontentcalendar@gmail.com?subject=Request%20Access%20to%20Caly">Request Access</a>
+        </Button>
       </nav>
 
       {/* Hero */}
@@ -73,15 +67,18 @@ export default function Landing() {
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button size="lg" className="gap-2 px-8 shadow-lg shadow-primary/25" asChild>
-            <Link to="/auth">
-              Start for free
+            <a href="mailto:digicontentcalendar@gmail.com?subject=Request%20Access%20to%20Caly">
+              Request Early Access
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </a>
           </Button>
           <Button variant="outline" size="lg" className="px-8" asChild>
             <a href="#features">How it works</a>
           </Button>
         </div>
+        <p className="mt-4 text-sm text-muted-foreground">
+          Caly is invite-only. Request access or wait for an invite from your team.
+        </p>
       </section>
 
       {/* Mock preview */}
@@ -149,15 +146,15 @@ export default function Landing() {
       {/* CTA */}
       <section className="mx-auto max-w-2xl px-6 pb-28 text-center">
         <div className="rounded-2xl border bg-gradient-to-br from-card via-card to-primary/[0.03] px-8 py-14 shadow-xl shadow-primary/5">
-          <h2 className="mb-3 text-3xl font-extrabold tracking-tight">Ready to get organized?</h2>
+          <h2 className="mb-3 text-3xl font-extrabold tracking-tight">Want in?</h2>
           <p className="mx-auto mb-8 max-w-md text-muted-foreground">
-            Join creative teams who plan smarter and publish with confidence.
+            Caly is invite-only. Drop us a line and we'll get you set up.
           </p>
           <Button size="lg" className="gap-2 px-8 shadow-lg shadow-primary/25" asChild>
-            <Link to="/auth">
-              Get started free
+            <a href="mailto:digicontentcalendar@gmail.com?subject=Request%20Access%20to%20Caly">
+              Request Access
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </a>
           </Button>
         </div>
       </section>
