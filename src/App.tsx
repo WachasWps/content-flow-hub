@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import AppLayout from "@/components/AppLayout";
 import Index from "./pages/Index";
-import Board from "./pages/Board";
+
 import SettingsPage from "./pages/SettingsPage";
 import Auth from "./pages/Auth";
 import Landing from "./pages/Landing";
@@ -40,7 +40,7 @@ const App = () => (
             <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/" element={<Index />} />
-              <Route path="/board" element={<Board />} />
+              
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
