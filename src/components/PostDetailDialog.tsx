@@ -7,12 +7,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 
-const statusLabels: Record<string, { label: string; color: string }> = {
-  idea: { label: "Idea", color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" },
-  in_editing: { label: "In Editing", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300" },
-  under_review: { label: "Under Review", color: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300" },
-  ready_to_post: { label: "Ready to Post", color: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" },
-  posted: { label: "Posted", color: "bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300" },
+const statusLabels: Record<string, { label: string; color: string; bg: string }> = {
+  idea: { label: "Idea", color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300", bg: "bg-blue-50 dark:bg-blue-950/40" },
+  in_editing: { label: "In Editing", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300", bg: "bg-yellow-50 dark:bg-yellow-950/40" },
+  under_review: { label: "Under Review", color: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300", bg: "bg-purple-50 dark:bg-purple-950/40" },
+  ready_to_post: { label: "Ready to Post", color: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300", bg: "bg-green-50 dark:bg-green-950/40" },
+  posted: { label: "Posted", color: "bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300", bg: "bg-pink-50 dark:bg-pink-950/40" },
 };
 
 const platformLabels: Record<string, string> = {
@@ -44,26 +44,28 @@ export default function PostDetailDialog({ post, open, onOpenChange }: PostDetai
 
   if (!post) return null;
 
-  const status = statusLabels[post.status] || { label: post.status, color: "bg-muted text-muted-foreground" };
+  const status = statusLabels[post.status] || { label: post.status, color: "bg-muted text-muted-foreground", bg: "bg-muted/30" };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <div className="flex items-start justify-between gap-4 pr-6">
-            <DialogTitle className="text-xl leading-snug">{post.title}</DialogTitle>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 pt-2">
-            <Badge variant="secondary" className={cn("text-xs font-semibold", status.color)}>
-              {status.label}
-            </Badge>
-            <Badge variant="outline" className="text-xs font-medium">
-              {platformLabels[post.platform] || post.platform}
-            </Badge>
-          </div>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
+        <div className={cn("px-6 pt-6 pb-4", status.bg)}>
+          <DialogHeader>
+            <div className="flex items-start justify-between gap-4 pr-6">
+              <DialogTitle className="text-xl leading-snug">{post.title}</DialogTitle>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              <Badge variant="secondary" className={cn("text-xs font-semibold", status.color)}>
+                {status.label}
+              </Badge>
+              <Badge variant="outline" className="text-xs font-medium border-foreground/20">
+                {platformLabels[post.platform] || post.platform}
+              </Badge>
+            </div>
+          </DialogHeader>
+        </div>
 
-        <div className="space-y-4 pt-2">
+        <div className="space-y-4 px-6 pb-6 pt-4">
           {/* Caption */}
           {post.caption && (
             <div className="space-y-1">
