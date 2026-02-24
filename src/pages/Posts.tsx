@@ -11,6 +11,7 @@ import PostDetailDialog from "@/components/PostDetailDialog";
 import NewPostDialog from "@/components/NewPostDialog";
 import type { Tables } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
+import { useWorkspace } from "@/lib/workspace";
 
 const platformConfig: Record<string, { color: string; label: string }> = {
   instagram: { color: "bg-platform-instagram", label: "Instagram" },
@@ -34,14 +35,21 @@ export default function PostsPage() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [selectedPost, setSelectedPost] = useState<Tables<"posts"> | null>(null);
   const { toast } = useToast();
+  const { activeCalendarId } = useWorkspace();
 
   const { data: posts = [], refetch } = useQuery({
-    queryKey: ["all-posts"],
+    queryKey: ["all-posts", activeCalendarId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("posts").select("*").order("created_at", { ascending: false });
+      if (!activeCalendarId) return [] as Tables<"posts">[];
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("calendar_id", activeCalendarId)
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Tables<"posts">[];
     },
+    enabled: !!activeCalendarId,
   });
 
   const filtered = useMemo(() => {
@@ -66,6 +74,7 @@ export default function PostsPage() {
       script: post.script,
       reference_link: post.reference_link,
       created_by: post.created_by,
+      calendar_id: post.calendar_id,
     });
     if (!error) { toast({ title: "Post duplicated" }); refetch(); }
   };

@@ -10,6 +10,8 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, ImagePlus, Link2, X } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { cn } from "@/lib/utils";
+import { useWorkspace } from "@/lib/workspace";
 
 type PlatformType = Database["public"]["Enums"]["platform_type"];
 type PostStatus = Database["public"]["Enums"]["post_status"];
@@ -24,8 +26,10 @@ export default function NewPostDialog({ defaultDate, onCreated }: NewPostDialogP
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [platforms, setPlatforms] = useState<PlatformType[]>(["instagram"]);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { activeCalendarId } = useWorkspace();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -42,13 +46,15 @@ export default function NewPostDialog({ defaultDate, onCreated }: NewPostDialogP
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !activeCalendarId) {
+      toast({ title: "No calendar selected", description: "Please select a calendar before creating a post.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
 
     const fd = new FormData(e.currentTarget);
     const title = fd.get("title") as string;
     const caption = fd.get("caption") as string;
-    const platform = fd.get("platform") as PlatformType;
     const status = fd.get("status") as PostStatus;
     const publishDate = fd.get("publish_date") as string;
     const notes = fd.get("notes") as string;
@@ -58,18 +64,30 @@ export default function NewPostDialog({ defaultDate, onCreated }: NewPostDialogP
       .map((t) => t.trim())
       .filter(Boolean);
 
-    // Create post
-    const { data: post, error } = await supabase.from("posts").insert({
+    const basePost = {
       title,
       caption: caption || null,
-      platform,
       status,
       publish_date: publishDate || null,
       notes: notes || null,
       reference_link: referenceLink || null,
       tags: tags.length > 0 ? tags : null,
       created_by: user.id,
-    }).select().single();
+      calendar_id: activeCalendarId,
+    };
+
+    const platformList = platforms.length > 0 ? platforms : ["instagram"];
+
+    // Create one post per selected platform
+    const { data: createdPosts, error } = await supabase
+      .from("posts")
+      .insert(
+        platformList.map((p) => ({
+          ...basePost,
+          platform: p,
+        })),
+      )
+      .select();
 
     if (error) {
       toast({ title: "Error creating post", description: error.message, variant: "destructive" });
@@ -77,23 +95,29 @@ export default function NewPostDialog({ defaultDate, onCreated }: NewPostDialogP
       return;
     }
 
-    // Upload image if present
-    if (imageFile && post) {
+    // Upload image if present (attach to each created post)
+    if (imageFile && createdPosts && createdPosts.length > 0) {
       const ext = imageFile.name.split(".").pop();
-      const path = `${user.id}/${post.id}/thumbnail.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("post-assets")
-        .upload(path, imageFile, { upsert: true });
+      for (const post of createdPosts) {
+        const path = `${user.id}/${post.id}/thumbnail.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("post-assets")
+          .upload(path, imageFile, { upsert: true });
 
-      if (uploadError) {
-        toast({ title: "Post created but image upload failed", description: uploadError.message, variant: "destructive" });
-      } else {
-        await supabase.from("post_files").insert({
-          post_id: post.id,
-          file_path: path,
-          file_type: imageFile.type,
-          uploaded_by: user.id,
-        });
+        if (uploadError) {
+          toast({
+            title: "Post created but image upload failed",
+            description: uploadError.message,
+            variant: "destructive",
+          });
+        } else {
+          await supabase.from("post_files").insert({
+            post_id: post.id,
+            file_path: path,
+            file_type: imageFile.type,
+            uploaded_by: user.id,
+          });
+        }
       }
     }
 
@@ -124,16 +148,34 @@ export default function NewPostDialog({ defaultDate, onCreated }: NewPostDialogP
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Platform *</Label>
-              <Select name="platform" defaultValue="instagram">
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="instagram">Instagram</SelectItem>
-                  <SelectItem value="youtube">YouTube</SelectItem>
-                  <SelectItem value="linkedin">LinkedIn</SelectItem>
-                  <SelectItem value="twitter">Twitter</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>Platforms *</Label>
+              <div className="flex flex-wrap gap-2">
+                {(["instagram", "youtube", "linkedin", "twitter"] as PlatformType[]).map((p) => {
+                  const active = platforms.includes(p);
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() =>
+                        setPlatforms((prev) =>
+                          prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p],
+                        )
+                      }
+                      className={cn(
+                        "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                        active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-muted-foreground hover:bg-muted",
+                      )}
+                    >
+                      {p === "instagram" && "Instagram"}
+                      {p === "youtube" && "YouTube"}
+                      {p === "linkedin" && "LinkedIn"}
+                      {p === "twitter" && "Twitter/X"}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Status</Label>

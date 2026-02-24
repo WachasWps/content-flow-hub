@@ -1,13 +1,7 @@
-project_id = "skednwgiotestrkhcmqu"
-
-[functions.notify-signup]
-verify_jwt = false
+project_id = "ppmpynfyydaudtfqhwuk"
 
 [functions.public-calendar]
 verify_jwt = false
 
-[functions.validate-invite]
-verify_jwt = false
-
-[functions.redeem-invite]
+[functions."redeem-workspace-invite"]
 verify_jwt = false

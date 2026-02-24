@@ -6,7 +6,6 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  isApproved: boolean | null;
   signOut: () => Promise<void>;
 }
 
@@ -14,7 +13,6 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
-  isApproved: null,
   signOut: async () => {},
 });
 
@@ -24,40 +22,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isApproved, setIsApproved] = useState<boolean | null>(null);
-
-  const fetchApproval = async (userId: string) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("is_approved")
-      .eq("id", userId)
-      .single();
-    setIsApproved(data?.is_approved ?? false);
-  };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          fetchApproval(session.user.id);
-        } else {
-          setIsApproved(null);
-        }
-        setLoading(false);
+    const handleSessionChange = async (nextSession: Session | null, setLoadingState = false) => {
+      if (setLoadingState) setLoading(true);
+      if (!nextSession) {
+        setSession(null);
+        setUser(null);
+        if (setLoadingState) setLoading(false);
+        return;
       }
-    );
+
+      // Validate that the user still exists on Supabase (handles deleted users)
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data.user) {
+        await supabase.auth.signOut();
+        setSession(null);
+        setUser(null);
+      } else {
+        setSession(nextSession);
+        setUser(data.user);
+      }
+      if (setLoadingState) setLoading(false);
+    };
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      // For token refreshes and normal auth changes, don't show the full-page loader
+      void handleSessionChange(session, false);
+    });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchApproval(session.user.id);
-      } else {
-        setIsApproved(null);
-      }
-      setLoading(false);
+      // Initial load: show loader until we know the real state
+      void handleSessionChange(session, true);
     });
 
     return () => subscription.unsubscribe();
@@ -68,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isApproved, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

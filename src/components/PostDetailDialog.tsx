@@ -1,15 +1,26 @@
-import { useState } from "react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useEffect, useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ExternalLink, Calendar, Tag, FileText, User, Image as ImageIcon, Trash2 } from "lucide-react";
+import { ExternalLink, Calendar, Tag, FileText, Trash2, Pencil } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const statusLabels: Record<string, { label: string; color: string; bg: string }> = {
   idea: { label: "Idea", color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300", bg: "bg-blue-50 dark:bg-blue-950/40" },
@@ -36,23 +47,37 @@ interface PostDetailDialogProps {
 export default function PostDetailDialog({ post, open, onOpenChange, onUpdated }: PostDetailDialogProps) {
   const { toast } = useToast();
   const [updating, setUpdating] = useState(false);
-
-  const { data: files = [] } = useQuery({
-    queryKey: ["post-files", post?.id],
-    queryFn: async () => {
-      if (!post) return [];
-      const { data } = await supabase
-        .from("post_files")
-        .select("*")
-        .eq("post_id", post.id);
-      return data || [];
-    },
-    enabled: !!post,
+  const [isEditing, setIsEditing] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    caption: "",
+    notes: "",
+    reference_link: "",
+    publish_date: "",
+    tags: "",
   });
+
+  useEffect(() => {
+    if (post && open) {
+      setForm({
+        title: post.title || "",
+        caption: post.caption || "",
+        notes: post.notes || "",
+        reference_link: post.reference_link || "",
+        publish_date: post.publish_date ? post.publish_date.slice(0, 10) : "",
+        tags: post.tags ? post.tags.join(", ") : "",
+      });
+      setIsEditing(false);
+    }
+  }, [post, open]);
 
   if (!post) return null;
 
-  const status = statusLabels[post.status] || { label: post.status, color: "bg-muted text-muted-foreground", bg: "bg-muted/30" };
+  const status = statusLabels[post.status] || {
+    label: post.status,
+    color: "bg-muted text-muted-foreground",
+    bg: "bg-muted/30",
+  };
 
   const handleStatusChange = async (newStatus: string) => {
     setUpdating(true);
@@ -65,6 +90,34 @@ export default function PostDetailDialog({ post, open, onOpenChange, onUpdated }
       toast({ title: "Failed to update status", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Status updated" });
+      onUpdated?.();
+    }
+  };
+
+  const handleSaveEdits = async () => {
+    if (!post) return;
+    setUpdating(true);
+    const { error } = await supabase
+      .from("posts")
+      .update({
+        title: form.title || post.title,
+        caption: form.caption || null,
+        notes: form.notes || null,
+        reference_link: form.reference_link || null,
+        publish_date: form.publish_date || null,
+        tags:
+          form.tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean) || null,
+      })
+      .eq("id", post.id);
+    setUpdating(false);
+    if (error) {
+      toast({ title: "Failed to update post", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Post updated" });
+      setIsEditing(false);
       onUpdated?.();
     }
   };
@@ -82,11 +135,47 @@ export default function PostDetailDialog({ post, open, onOpenChange, onUpdated }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
-        <div className={cn("px-6 pt-6 pb-4", status.bg)}>
+      <DialogContent className="sm:max-w-xl max-w-[95vw] p-0 overflow-hidden">
+        <div className={cn("px-6 pt-6 pb-4 border-b", status.bg)}>
           <DialogHeader>
-            <div className="flex items-start justify-between gap-4 pr-6">
-              <DialogTitle className="text-xl leading-snug">{post.title}</DialogTitle>
+            <div className="flex items-start justify-between gap-4 pr-8">
+              {isEditing ? (
+                <Input
+                  value={form.title}
+                  onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                  className="text-base font-semibold"
+                />
+              ) : (
+                <DialogTitle className="text-xl leading-snug">{post.title}</DialogTitle>
+              )}
+              <div className="flex items-center gap-2">
+                {isEditing ? (
+                  <>
+                    <button
+                      onClick={handleSaveEdits}
+                      disabled={updating}
+                      className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                    >
+                      {updating ? "Saving…" : "Save"}
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      disabled={updating}
+                      className="rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted/50"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted/60"
+                  >
+                    <Pencil className="h-3 w-3" />
+                    Edit
+                  </button>
+                )}
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 pt-2">
               <Select defaultValue={post.status} onValueChange={handleStatusChange} disabled={updating}>
@@ -108,83 +197,99 @@ export default function PostDetailDialog({ post, open, onOpenChange, onUpdated }
           </DialogHeader>
         </div>
 
-        <div className="space-y-4 px-6 pb-6 pt-4">
+        <div className="space-y-4 px-6 pb-6 pt-4 max-h-[70vh] overflow-y-auto">
           {/* Caption */}
-          {post.caption && (
+          {(post.caption || isEditing) && (
             <div className="space-y-1">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Caption</p>
-              <p className="text-sm leading-relaxed">{post.caption}</p>
-            </div>
-          )}
-
-          {/* Script */}
-          {post.script && (
-            <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Script</p>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed">{post.script}</p>
-            </div>
-          )}
-
-          {/* Image */}
-          {files.length > 0 && (
-            <div className="space-y-1">
-              <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                <ImageIcon className="h-3 w-3" /> Attachments
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {files.map((f) => {
-                  const url = supabase.storage.from("post-assets").getPublicUrl(f.file_path).data.publicUrl;
-                  return (
-                    <img
-                      key={f.id}
-                      src={url}
-                      alt="Attachment"
-                      className="h-24 w-auto rounded-lg border object-cover"
-                    />
-                  );
-                })}
-              </div>
+              {isEditing ? (
+                <Textarea
+                  rows={3}
+                  value={form.caption}
+                  onChange={(e) => setForm((f) => ({ ...f, caption: e.target.value }))}
+                  className="text-sm"
+                />
+              ) : (
+                <p className="text-sm leading-relaxed">{post.caption}</p>
+              )}
             </div>
           )}
 
           {/* Metadata grid */}
           <div className="grid grid-cols-2 gap-3">
-            {post.publish_date && (
+            {(post.publish_date || isEditing) && (
               <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2">
                 <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs font-medium">
-                  {format(new Date(post.publish_date), "MMM d, yyyy")}
-                </span>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={form.publish_date}
+                    onChange={(e) => setForm((f) => ({ ...f, publish_date: e.target.value }))}
+                    className="h-7 border-0 bg-transparent p-0 text-xs font-medium"
+                  />
+                ) : (
+                  <span className="text-xs font-medium">
+                    {post.publish_date ? format(new Date(post.publish_date), "MMM d, yyyy") : ""}
+                  </span>
+                )}
               </div>
             )}
-            {post.tags && post.tags.length > 0 && (
+            {(post.tags && post.tags.length > 0) || isEditing ? (
               <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2">
                 <Tag className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="truncate text-xs font-medium">{post.tags.join(", ")}</span>
+                {isEditing ? (
+                  <Input
+                    value={form.tags}
+                    onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
+                    placeholder="tag1, tag2"
+                    className="h-7 border-0 bg-transparent p-0 text-xs font-medium"
+                  />
+                ) : (
+                  <span className="truncate text-xs font-medium">{post.tags?.join(", ")}</span>
+                )}
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Reference link */}
-          {post.reference_link && (
+          {(post.reference_link || isEditing) && (
             <a
-              href={post.reference_link}
+              href={post.reference_link || "#"}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/5"
             >
               <ExternalLink className="h-3.5 w-3.5" />
-              <span className="truncate">{post.reference_link}</span>
+              {isEditing ? (
+                <Input
+                  value={form.reference_link}
+                  onClick={(e) => e.preventDefault()}
+                  onChange={(e) => setForm((f) => ({ ...f, reference_link: e.target.value }))}
+                  placeholder="https://…"
+                  className="border-0 bg-transparent p-0 text-xs font-medium text-primary"
+                />
+              ) : (
+                <span className="truncate">{post.reference_link}</span>
+              )}
             </a>
           )}
 
           {/* Notes */}
-          {post.notes && (
+          {(post.notes || isEditing) && (
             <div className="space-y-1">
               <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <FileText className="h-3 w-3" /> Notes
               </p>
-              <p className="text-sm leading-relaxed text-muted-foreground">{post.notes}</p>
+              {isEditing ? (
+                <Textarea
+                  rows={3}
+                  value={form.notes}
+                  onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                  className="text-sm"
+                />
+              ) : (
+                <p className="text-sm leading-relaxed text-muted-foreground">{post.notes}</p>
+              )}
             </div>
           )}
           {/* Delete */}

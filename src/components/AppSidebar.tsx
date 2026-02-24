@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useWorkspace } from "@/lib/workspace";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const workspaceItems = [
   { to: "/dashboard", icon: CalendarDays, label: "Calendar", emoji: "📅" },
@@ -63,6 +65,7 @@ export default function AppSidebar() {
   const { signOut, user } = useAuth();
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const { workspaces, activeWorkspaceId, setActiveWorkspaceId } = useWorkspace();
 
   if (isMobile) {
     return (
@@ -85,6 +88,26 @@ export default function AppSidebar() {
             <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
             <aside className="relative h-full w-[260px] bg-foreground overflow-y-auto">
               <nav className="py-2">
+                <div className="px-6 mb-3">
+                  <p className="text-[9px] font-medium uppercase tracking-[0.18em] text-[hsl(var(--sand))]/40 mb-1">
+                    Workspace
+                  </p>
+                  <Select
+                    value={activeWorkspaceId ?? undefined}
+                    onValueChange={(val) => setActiveWorkspaceId(val)}
+                  >
+                    <SelectTrigger className="h-8 text-[12px] bg-card border-border">
+                      <SelectValue placeholder="Select workspace" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover">
+                      {workspaces.map((w) => (
+                        <SelectItem key={w.id} value={w.id}>
+                          {w.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <NavSection label="Workspace" items={workspaceItems} onNavigate={() => setOpen(false)} />
                 <NavSection label="Insights" items={insightItems} onNavigate={() => setOpen(false)} />
                 <NavSection label="Team" items={teamItems} onNavigate={() => setOpen(false)} />
@@ -114,7 +137,7 @@ export default function AppSidebar() {
       <div className="absolute bottom-10 -left-10 w-[120px] h-[120px] bg-accent opacity-[0.08] rounded-full" />
 
       {/* Logo */}
-      <div className="px-6 pt-7 pb-7 border-b border-[hsl(var(--sand))]/10 relative z-10">
+      <div className="px-6 pt-7 pb-5 border-b border-[hsl(var(--sand))]/10 relative z-10">
         <Link to="/">
           <h1 className="font-serif-display text-[30px] font-bold text-primary tracking-[-0.5px] leading-none">
             caly.
@@ -123,6 +146,26 @@ export default function AppSidebar() {
         <span className="block mt-0.5 text-[11px] font-sans tracking-[0.15em] text-[hsl(39_66%_90%/0.3)] italic">
           Content Calendar
         </span>
+        <div className="mt-4">
+          <p className="text-[9px] font-medium uppercase tracking-[0.18em] text-[hsl(var(--sand))]/40 mb-1">
+            Workspace
+          </p>
+          <Select
+            value={activeWorkspaceId ?? undefined}
+            onValueChange={(val) => setActiveWorkspaceId(val)}
+          >
+            <SelectTrigger className="h-8 text-[12px] bg-card border-border">
+              <SelectValue placeholder="Select workspace" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover">
+              {workspaces.map((w) => (
+                <SelectItem key={w.id} value={w.id}>
+                  {w.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Navigation */}

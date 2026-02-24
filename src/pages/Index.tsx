@@ -13,7 +13,7 @@ import {
   subMonths,
   getDay,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, Share2, MessageCircle, Link as LinkIcon, Check, Copy } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Share2, MessageCircle, Link as LinkIcon, Check, Copy, Pencil } from "lucide-react";
 import html2canvas from "html2canvas";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,7 +23,10 @@ import PostDetailDialog from "@/components/PostDetailDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import type { Tables } from "@/integrations/supabase/types";
+import { useWorkspace } from "@/lib/workspace";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -51,8 +54,16 @@ export default function CalendarPage() {
   const [view, setView] = useState<"month" | "week">("month");
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
+  const { calendars, activeCalendarId, setActiveCalendarId, reload } = useWorkspace();
+
+  const activeCalendar = useMemo(
+    () => calendars.find((c) => c.id === activeCalendarId) ?? null,
+    [calendars, activeCalendarId]
+  );
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -73,16 +84,22 @@ export default function CalendarPage() {
   );
 
   const { data: posts = [], refetch } = useQuery({
-    queryKey: ["posts", format(monthStart, "yyyy-MM"), format(monthEnd, "yyyy-MM")],
+    queryKey: ["posts", activeCalendarId, format(monthStart, "yyyy-MM"), format(monthEnd, "yyyy-MM")],
     queryFn: async () => {
+      if (!activeCalendarId) return [] as Tables<"posts">[];
       const { data, error } = await supabase
         .from("posts")
         .select("*")
+        .eq("calendar_id", activeCalendarId)
         .gte("publish_date", format(calendarStart, "yyyy-MM-dd"))
         .lte("publish_date", format(calendarEnd, "yyyy-MM-dd"));
       if (error) throw error;
       return data as Tables<"posts">[];
     },
+    enabled: !!activeCalendarId,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const postsByDate = useMemo(() => {
@@ -102,10 +119,14 @@ export default function CalendarPage() {
   const quotes = ["plan something ✦", "rest ◦", "create freely", "brainstorm ✧", "breathe ◌"];
 
   const handleCreateShareLink = async () => {
-    if (!user) return;
+    if (!user || !activeCalendarId) return;
     const { data, error } = await supabase
       .from("shared_calendars")
-      .insert({ created_by: user.id, label: format(currentDate, "MMMM yyyy") + " Calendar" })
+      .insert({
+        created_by: user.id,
+        label: format(currentDate, "MMMM yyyy") + " Calendar",
+        calendar_id: activeCalendarId,
+      })
       .select("token")
       .single();
     if (error) {
@@ -134,6 +155,52 @@ export default function CalendarPage() {
     )}\nShared via Caly\n${shareLink || ""}`;
     const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
+  };
+
+  const handleRenameCalendar = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!activeCalendarId) return;
+    const trimmed = renameValue.trim();
+    if (!trimmed) return;
+
+    const { error } = await supabase
+      .from("calendars")
+      .update({ name: trimmed })
+      .eq("id", activeCalendarId);
+
+    if (error) {
+      toast({
+        title: "Failed to rename calendar",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({ title: "Calendar renamed" });
+    setRenameOpen(false);
+    reload();
+  };
+
+  const handlePostDrop = async (date: Date, event: React.DragEvent) => {
+    event.preventDefault();
+    const postId = event.dataTransfer.getData("text/plain");
+    if (!postId) return;
+    const targetDate = format(date, "yyyy-MM-dd");
+    const post = posts.find((p) => p.id === postId);
+    if (!post) return;
+
+    const { error } = await supabase
+      .from("posts")
+      .update({ publish_date: `${targetDate}T00:00:00` })
+      .eq("id", postId);
+
+    if (error) {
+      toast({ title: "Failed to move post", description: error.message, variant: "destructive" });
+    } else {
+      await refetch();
+      toast({ title: "Post moved" });
+    }
   };
 
   return (
@@ -203,6 +270,75 @@ export default function CalendarPage() {
             </PopoverContent>
           </Popover>
 
+          {/* Calendar selector */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-muted-foreground hidden sm:inline">Calendar</span>
+            <Select
+              value={activeCalendarId ?? undefined}
+              onValueChange={(val) => setActiveCalendarId(val)}
+            >
+              <SelectTrigger className="h-9 w-[160px] text-[12px] bg-card border-[hsl(var(--sand))]">
+                <SelectValue placeholder="Select calendar" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover">
+                {calendars.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Popover
+              open={renameOpen}
+              onOpenChange={(open) => {
+                setRenameOpen(open);
+                if (open && activeCalendar) {
+                  setRenameValue(activeCalendar.name);
+                }
+              }}
+            >
+              <PopoverTrigger asChild>
+                <button
+                  disabled={!activeCalendar}
+                  className="flex items-center justify-center h-8 w-8 rounded-md border border-[hsl(var(--sand))] text-muted-foreground hover:text-foreground hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed"
+                  aria-label="Rename calendar"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-3 space-y-3" align="start">
+                <p className="text-[11px] text-muted-foreground">
+                  Give this calendar a clear name so teammates understand what it&apos;s for.
+                </p>
+                <form onSubmit={handleRenameCalendar} className="space-y-2">
+                  <Input
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    placeholder="e.g. Brand A – Instagram"
+                    className="h-8 text-[12px]"
+                    autoFocus
+                  />
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      className="text-[11px] px-2 py-1 rounded-md border border-border text-muted-foreground hover:bg-muted"
+                      onClick={() => setRenameOpen(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={!renameValue.trim()}
+                      className="text-[11px] px-3 py-1 rounded-md bg-primary text-primary-foreground disabled:opacity-50"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </form>
+              </PopoverContent>
+            </Popover>
+          </div>
+
           {/* View toggle */}
           <div className="flex rounded-lg border border-[hsl(var(--sand))] bg-[hsl(var(--card))] p-[3px]">
             <button
@@ -265,6 +401,8 @@ export default function CalendarPage() {
                   <button
                     key={day.toISOString()}
                     onClick={() => setSelectedDate(day)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handlePostDrop(day, e)}
                     style={{ animationDelay: `${i * 0.02}s` }}
                     className={cn(
                       "relative flex min-h-[80px] sm:min-h-[120px] flex-col rounded-[10px] p-1.5 sm:p-2.5 text-left transition-all border-[1.5px] border-transparent cursor-pointer animate-in fade-in slide-in-from-bottom-1",
@@ -288,12 +426,17 @@ export default function CalendarPage() {
                     {/* Posts */}
                     {inMonth && dayPosts.length > 0 && (
                       <div className="flex-1 space-y-1">
-                    {dayPosts.slice(0, 2).map((p) => {
+                        {dayPosts.slice(0, 2).map((p) => {
                           const plat = platformConfig[p.platform];
                           const stat = statusConfig[p.status];
                           return (
                             <div
                               key={p.id}
+                              draggable
+                              onDragStart={(e) => {
+                                e.dataTransfer.setData("text/plain", p.id);
+                                e.dataTransfer.effectAllowed = "move";
+                              }}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedPost(p);
@@ -383,9 +526,8 @@ export default function CalendarPage() {
 
               {/* Time slots */}
               {HOURS.map((hr) => (
-                <>
+              <div key={hr} className="contents">
                   <div
-                    key={`time-${hr}`}
                     className="border-b border-r border-[hsl(var(--sand))]/30 bg-card px-2.5 py-2 text-right text-[9px] text-muted-foreground tracking-[0.03em]"
                   >
                     {hr}
@@ -398,6 +540,8 @@ export default function CalendarPage() {
                     return (
                       <div
                         key={`${hr}-${d.toISOString()}`}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => handlePostDrop(d, e)}
                         className={cn(
                           "border-b border-[hsl(var(--sand))]/30 p-1 min-h-[64px] transition-colors",
                           di < 6 && "border-r",
@@ -412,6 +556,11 @@ export default function CalendarPage() {
                             return (
                               <div
                                 key={p.id}
+                                draggable
+                                onDragStart={(e) => {
+                                  e.dataTransfer.setData("text/plain", p.id);
+                                  e.dataTransfer.effectAllowed = "move";
+                                }}
                                 onClick={() => setSelectedPost(p)}
                                 className="rounded-[7px] overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
                               >
@@ -438,7 +587,7 @@ export default function CalendarPage() {
                       </div>
                     );
                   })}
-                </>
+                </div>
               ))}
             </div>
           </div>

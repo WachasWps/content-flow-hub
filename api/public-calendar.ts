@@ -39,6 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { data: posts, error: postsErr } = await supabase
       .from("posts")
       .select("id, title, platform, status, publish_date, caption")
+      .eq("calendar_id", share.calendar_id)
       .gte("publish_date", startDate)
       .lte("publish_date", `${endDate}T23:59:59`)
       .order("publish_date", { ascending: true });

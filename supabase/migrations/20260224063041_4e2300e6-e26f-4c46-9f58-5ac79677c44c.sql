@@ -2,7 +2,8 @@
 -- Table for invite tokens (bypass waitlist)
 CREATE TABLE public.invite_tokens (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  token text NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(16), 'hex'),
+  -- Use UUID-based token so we don't depend on gen_random_bytes
+  token text NOT NULL UNIQUE DEFAULT gen_random_uuid()::text,
   created_by uuid NOT NULL,
   used_by uuid,
   used_at timestamp with time zone,
@@ -27,7 +28,7 @@ CREATE POLICY "Admins and strategists can update invite tokens"
 -- Table for shared calendar links
 CREATE TABLE public.shared_calendars (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  token text NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(16), 'hex'),
+  token text NOT NULL UNIQUE DEFAULT gen_random_uuid()::text,
   created_by uuid NOT NULL,
   label text,
   is_active boolean NOT NULL DEFAULT true,

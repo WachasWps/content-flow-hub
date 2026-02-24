@@ -76,14 +76,8 @@ const testimonialSteps = [
 ];
 
 export default function Landing() {
-  const { user, isApproved } = useAuth();
+  const { user } = useAuth();
   const [email, setEmail] = useState("");
-
-  const handleWaitlist = () => {
-    const subject = encodeURIComponent("Request Access to Caly");
-    const body = encodeURIComponent(`Hi! I'd love to get early access to Caly.\n\nMy email: ${email}\n\nLooking forward to it!`);
-    window.open(`mailto:digicontentcalendar@gmail.com?subject=${subject}&body=${body}`, "_self");
-  };
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
@@ -95,13 +89,13 @@ export default function Landing() {
             <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
               <a href="#how-it-works">How it works</a>
             </Button>
-            {user && isApproved ? (
+            {user ? (
               <Button size="sm" className="shadow-md shadow-primary/20" asChild>
                 <Link to="/dashboard">Dashboard</Link>
               </Button>
             ) : (
               <Button size="sm" className="shadow-md shadow-primary/20" asChild>
-                <a href="#waitlist">Join Waitlist</a>
+                <Link to="/auth">Login</Link>
               </Button>
             )}
           </div>
@@ -129,7 +123,7 @@ export default function Landing() {
         <div className="relative text-center">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border bg-card px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm">
             <Sparkles className="h-4 w-4 text-[hsl(var(--pop-yellow))]" />
-            Invite-only • Built for content creators
+            Built for content creators
           </div>
 
           <h1 className="mx-auto max-w-4xl text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
@@ -157,37 +151,26 @@ export default function Landing() {
             ))}
           </div>
 
-          {/* Waitlist CTA / Dashboard Link */}
-          <div id="waitlist" className="mx-auto mt-10 max-w-md">
-            {user && isApproved ? (
-              <div className="flex flex-col gap-3 sm:flex-row justify-center">
-                <Button size="lg" className="gap-2 shadow-lg shadow-primary/25" asChild>
-                  <Link to="/dashboard">
-                    Go to Dashboard
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    className="flex-1 rounded-lg border bg-card px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                  <Button size="lg" className="gap-2 shadow-lg shadow-primary/25" onClick={handleWaitlist}>
-                    Join Waitlist
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="mt-3 text-xs text-muted-foreground">
-                  🔒 Invite-only access. We'll send you a link when your spot is ready.
-                </p>
-              </>
-            )}
+          {/* Primary CTA */}
+          <div className="mx-auto mt-10 max-w-md">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com (optional)"
+                className="flex-1 rounded-lg border bg-card px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <Button size="lg" className="gap-2 shadow-lg shadow-primary/25" asChild>
+                <Link to="/auth">
+                  Get started
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Create an account and start planning today.
+            </p>
           </div>
         </div>
       </section>
@@ -316,42 +299,21 @@ export default function Landing() {
         <div className="mx-auto max-w-3xl px-5 py-20 text-center md:py-28">
           <div className="rounded-2xl border bg-gradient-to-br from-card via-card to-primary/[0.06] px-6 py-14 shadow-xl shadow-primary/5 sm:px-12">
             <Sparkles className="mx-auto mb-4 h-8 w-8 text-primary" />
-            <h2 className="mb-3 text-3xl font-extrabold tracking-tight sm:text-4xl">Want early access?</h2>
+            <h2 className="mb-3 text-3xl font-extrabold tracking-tight sm:text-4xl">Ready to plan your content?</h2>
             <p className="mx-auto mb-8 max-w-md font-serif-body text-muted-foreground">
-              Caly is invite-only. Drop your email and we'll get you set up with your own workspace.
+              Create your workspace and start building a consistent posting pipeline.
             </p>
-            {user && isApproved ? (
-              <div className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row justify-center">
-                <Button size="lg" className="gap-2 shadow-lg shadow-primary/25" asChild>
-                  <Link to="/dashboard">
-                    Go to Dashboard
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    className="flex-1 rounded-lg border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                  <Button size="lg" className="gap-2 shadow-lg shadow-primary/25" onClick={handleWaitlist}>
-                    Request Access
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="mt-4 text-xs text-muted-foreground">
-                  Or email us directly at{" "}
-                  <a href="mailto:digicontentcalendar@gmail.com" className="font-medium text-primary underline underline-offset-2 hover:text-primary/80">
-                    digicontentcalendar@gmail.com
-                  </a>
-                </p>
-              </>
-            )}
+            <div className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row justify-center">
+              <Button size="lg" className="gap-2 shadow-lg shadow-primary/25" asChild>
+                <Link to="/auth">
+                  Get started
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" className="gap-2" asChild>
+                <a href="mailto:digicontentcalendar@gmail.com">Contact</a>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
