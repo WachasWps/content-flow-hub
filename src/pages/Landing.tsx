@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
   CalendarDays, LayoutGrid, Users, Zap, ArrowRight, Check, Instagram,
@@ -74,6 +76,7 @@ const testimonialSteps = [
 ];
 
 export default function Landing() {
+  const { user, isApproved } = useAuth();
   const [email, setEmail] = useState("");
 
   const handleWaitlist = () => {
@@ -89,14 +92,18 @@ export default function Landing() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <img src={calyLogo} alt="Caly" className="h-8 w-auto dark:invert" />
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
               <a href="#how-it-works">How it works</a>
             </Button>
-            <Button size="sm" className="shadow-md shadow-primary/20" asChild>
-              <a href="#waitlist">
-                Join Waitlist
-              </a>
-            </Button>
+            {user && isApproved ? (
+              <Button size="sm" className="shadow-md shadow-primary/20" asChild>
+                <Link to="/dashboard">Dashboard</Link>
+              </Button>
+            ) : (
+              <Button size="sm" className="shadow-md shadow-primary/20" asChild>
+                <a href="#waitlist">Join Waitlist</a>
+              </Button>
+            )}
           </div>
         </div>
       </nav>
@@ -150,24 +157,37 @@ export default function Landing() {
             ))}
           </div>
 
-          {/* Waitlist CTA */}
+          {/* Waitlist CTA / Dashboard Link */}
           <div id="waitlist" className="mx-auto mt-10 max-w-md">
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="flex-1 rounded-lg border bg-card px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-              <Button size="lg" className="gap-2 shadow-lg shadow-primary/25" onClick={handleWaitlist}>
-                Join Waitlist
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </div>
-            <p className="mt-3 text-xs text-muted-foreground">
-              🔒 Invite-only access. We'll send you a link when your spot is ready.
-            </p>
+            {user && isApproved ? (
+              <div className="flex flex-col gap-3 sm:flex-row justify-center">
+                <Button size="lg" className="gap-2 shadow-lg shadow-primary/25" asChild>
+                  <Link to="/dashboard">
+                    Go to Dashboard
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="flex-1 rounded-lg border bg-card px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <Button size="lg" className="gap-2 shadow-lg shadow-primary/25" onClick={handleWaitlist}>
+                    Join Waitlist
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  🔒 Invite-only access. We'll send you a link when your spot is ready.
+                </p>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -300,25 +320,38 @@ export default function Landing() {
             <p className="mx-auto mb-8 max-w-md font-serif-body text-muted-foreground">
               Caly is invite-only. Drop your email and we'll get you set up with your own workspace.
             </p>
-            <div className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="flex-1 rounded-lg border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-              <Button size="lg" className="gap-2 shadow-lg shadow-primary/25" onClick={handleWaitlist}>
-                Request Access
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </div>
-            <p className="mt-4 text-xs text-muted-foreground">
-              Or email us directly at{" "}
-              <a href="mailto:digicontentcalendar@gmail.com" className="font-medium text-primary underline underline-offset-2 hover:text-primary/80">
-                digicontentcalendar@gmail.com
-              </a>
-            </p>
+            {user && isApproved ? (
+              <div className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row justify-center">
+                <Button size="lg" className="gap-2 shadow-lg shadow-primary/25" asChild>
+                  <Link to="/dashboard">
+                    Go to Dashboard
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="flex-1 rounded-lg border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <Button size="lg" className="gap-2 shadow-lg shadow-primary/25" onClick={handleWaitlist}>
+                    Request Access
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="mt-4 text-xs text-muted-foreground">
+                  Or email us directly at{" "}
+                  <a href="mailto:digicontentcalendar@gmail.com" className="font-medium text-primary underline underline-offset-2 hover:text-primary/80">
+                    digicontentcalendar@gmail.com
+                  </a>
+                </p>
+              </>
+            )}
           </div>
         </div>
       </section>

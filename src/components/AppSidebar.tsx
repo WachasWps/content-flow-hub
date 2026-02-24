@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const workspaceItems = [
-  { to: "/", icon: CalendarDays, label: "Calendar", emoji: "📅" },
+  { to: "/dashboard", icon: CalendarDays, label: "Calendar", emoji: "📅" },
   { to: "/posts", icon: FileText, label: "Posts", emoji: "📋" },
   { to: "/drafts", icon: Sparkles, label: "Drafts", emoji: "✦" },
 ];
@@ -37,7 +37,7 @@ function NavSection({ label, items, onNavigate }: { label: string; items: typeof
         {label}
       </div>
       {items.map(({ to, label, emoji }) => {
-        const isActive = to === "/" ? location.pathname === "/" : location.pathname === to;
+        const isActive = to === "/dashboard" ? location.pathname === "/dashboard" : location.pathname === to;
         return (
           <NavLink
             key={to}
@@ -69,7 +69,7 @@ export default function AppSidebar() {
       <>
         {/* Mobile top bar */}
         <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-foreground px-4 py-3">
-        <Link to="/landing">
+        <Link to="/">
             <h1 className="font-serif-display text-[24px] font-bold text-primary tracking-[-0.5px] leading-none">
               caly.
             </h1>
@@ -115,7 +115,7 @@ export default function AppSidebar() {
 
       {/* Logo */}
       <div className="px-6 pt-7 pb-7 border-b border-[hsl(var(--sand))]/10 relative z-10">
-        <Link to="/landing">
+        <Link to="/">
           <h1 className="font-serif-display text-[30px] font-bold text-primary tracking-[-0.5px] leading-none">
             caly.
           </h1>
