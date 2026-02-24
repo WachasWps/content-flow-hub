@@ -57,6 +57,19 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        status: {
+          idea: "hsl(var(--status-idea))",
+          editing: "hsl(var(--status-editing))",
+          review: "hsl(var(--status-review))",
+          ready: "hsl(var(--status-ready))",
+          posted: "hsl(var(--status-posted))",
+        },
+        platform: {
+          instagram: "hsl(var(--platform-instagram))",
+          youtube: "hsl(var(--platform-youtube))",
+          linkedin: "hsl(var(--platform-linkedin))",
+          twitter: "hsl(var(--platform-twitter))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
