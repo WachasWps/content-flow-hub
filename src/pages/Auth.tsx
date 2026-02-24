@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, ArrowLeft } from "lucide-react";
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
@@ -57,26 +57,26 @@ export default function Auth() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-6">
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-sm">
             <CalendarDays className="h-6 w-6 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Content Calendar</h1>
-          <p className="text-sm text-muted-foreground">Plan, produce, and publish together.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
+          <p className="text-sm text-muted-foreground">Sign in to your ContentCal workspace.</p>
         </div>
 
-        <Card>
+        <Card className="shadow-md shadow-primary/5">
           <Tabs defaultValue="login">
-            <CardHeader className="pb-4">
+            <div className="px-6 pt-6 pb-2">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Log in</TabsTrigger>
                 <TabsTrigger value="signup">Sign up</TabsTrigger>
               </TabsList>
-            </CardHeader>
+            </div>
 
             <TabsContent value="login">
               <form onSubmit={handleLogin}>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 pt-4">
                   <div className="space-y-2">
                     <Label htmlFor="login-email">Email</Label>
                     <Input id="login-email" name="email" type="email" required placeholder="you@company.com" />
@@ -94,7 +94,7 @@ export default function Auth() {
 
             <TabsContent value="signup">
               <form onSubmit={handleSignup}>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 pt-4">
                   <div className="space-y-2">
                     <Label htmlFor="signup-name">Full name</Label>
                     <Input id="signup-name" name="fullName" required placeholder="Jane Doe" />
@@ -115,6 +115,13 @@ export default function Auth() {
             </TabsContent>
           </Tabs>
         </Card>
+
+        <p className="text-center text-sm text-muted-foreground">
+          <Link to="/landing" className="inline-flex items-center gap-1 transition-colors hover:text-foreground">
+            <ArrowLeft className="h-3 w-3" />
+            Back to homepage
+          </Link>
+        </p>
       </div>
     </div>
   );
