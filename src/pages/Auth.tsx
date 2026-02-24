@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { CalendarDays, ArrowLeft } from "lucide-react";
 
@@ -30,34 +29,6 @@ export default function Auth() {
     setLoading(false);
   };
 
-  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const fullName = formData.get("fullName") as string;
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName },
-        emailRedirectTo: window.location.origin,
-      },
-    });
-    if (error) {
-      toast({ title: "Signup failed", description: error.message, variant: "destructive" });
-    } else {
-      // Notify admin about new signup
-      supabase.functions.invoke("notify-signup", {
-        body: { email, fullName },
-      }).catch(() => {});
-      toast({ title: "You're on the waitlist!", description: "We'll review your request and get back to you soon." });
-    }
-    setLoading(false);
-  };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-6">
@@ -70,55 +41,26 @@ export default function Auth() {
         </div>
 
         <Card className="shadow-xl shadow-primary/5">
-          <Tabs defaultValue="login">
-            <div className="px-6 pt-6 pb-2">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Log in</TabsTrigger>
-                <TabsTrigger value="signup">Sign up</TabsTrigger>
-              </TabsList>
-            </div>
-
-            <TabsContent value="login">
-              <form onSubmit={handleLogin}>
-                <CardContent className="space-y-4 pt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input id="login-email" name="email" type="email" required placeholder="you@company.com" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
-                    <Input id="login-password" name="password" type="password" required placeholder="••••••••" />
-                  </div>
-                  <Button type="submit" className="w-full shadow-md shadow-primary/20" disabled={loading}>
-                    {loading ? "Signing in…" : "Sign in"}
-                  </Button>
-                </CardContent>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signup">
-              <form onSubmit={handleSignup}>
-                <CardContent className="space-y-4 pt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">Full name</Label>
-                    <Input id="signup-name" name="fullName" required placeholder="Jane Doe" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input id="signup-email" name="email" type="email" required placeholder="you@company.com" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
-                    <Input id="signup-password" name="password" type="password" required minLength={6} placeholder="••••••••" />
-                  </div>
-                  <Button type="submit" className="w-full shadow-md shadow-primary/20" disabled={loading}>
-                    {loading ? "Creating account…" : "Create account"}
-                  </Button>
-                </CardContent>
-              </form>
-            </TabsContent>
-          </Tabs>
+          <form onSubmit={handleLogin}>
+            <CardContent className="space-y-4 pt-6">
+              <div className="space-y-2">
+                <Label htmlFor="login-email">Email</Label>
+                <Input id="login-email" name="email" type="email" required placeholder="you@company.com" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="login-password">Password</Label>
+                <Input id="login-password" name="password" type="password" required placeholder="••••••••" />
+              </div>
+              <Button type="submit" className="w-full shadow-md shadow-primary/20" disabled={loading}>
+                {loading ? "Signing in…" : "Sign in"}
+              </Button>
+            </CardContent>
+          </form>
         </Card>
+
+        <p className="text-center text-xs text-muted-foreground">
+          Access is invite-only. Ask your team admin for an invite link.
+        </p>
 
         <p className="text-center text-sm text-muted-foreground">
           <Link to="/landing" className="inline-flex items-center gap-1 transition-colors hover:text-foreground">

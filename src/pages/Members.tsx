@@ -102,9 +102,10 @@ export default function MembersPage() {
 
   const handleCopyInvite = () => {
     if (!inviteLink) return;
-    navigator.clipboard.writeText(inviteLink);
+    const inviteMessage = `Hey! I'm sharing special access to my content calendar platform — I'm just launching this and open to suggestions. Write me at digicontentcalendar@gmail.com\n\nPlease let me know your feedback!\n\n${inviteLink}`;
+    navigator.clipboard.writeText(inviteMessage);
     setInviteCopied(true);
-    toast({ title: "Invite link copied!" });
+    toast({ title: "Invite message copied!" });
     setTimeout(() => setInviteCopied(false), 2000);
   };
 
@@ -112,9 +113,9 @@ export default function MembersPage() {
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="flex items-center justify-between gap-4 border-b border-border bg-[hsl(var(--warm-white))] px-8 py-4">
-        <h1 className="font-serif-display text-[22px] font-semibold text-foreground">👤 Members</h1>
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-border bg-[hsl(var(--warm-white))] px-4 sm:px-8 py-4">
+        <h1 className="font-serif-display text-[18px] sm:text-[22px] font-semibold text-foreground">👤 Members</h1>
+        <div className="flex items-center gap-2 sm:gap-3">
           <Select value={roleFilter} onValueChange={setRoleFilter}>
             <SelectTrigger className="h-9 w-[130px] text-[13px]"><SelectValue placeholder="Role" /></SelectTrigger>
             <SelectContent className="z-[100] bg-popover">
@@ -162,7 +163,7 @@ export default function MembersPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-8">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-8">
         <Tabs defaultValue="team">
           <TabsList className="mb-6">
             <TabsTrigger value="team">Team ({filtered.length})</TabsTrigger>
@@ -183,7 +184,7 @@ export default function MembersPage() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
                   {filtered.map((member, i) => {
                     const role = roleConfig[member.primaryRole] || roleConfig.editor;
                     return (

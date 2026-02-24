@@ -1,8 +1,10 @@
-import { CalendarDays, FileText, Sparkles, BarChart3, Settings, Users, LogOut, User } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { CalendarDays, FileText, Sparkles, BarChart3, Settings, Users, LogOut, User, Menu, X } from "lucide-react";
+import { NavLink, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const workspaceItems = [
   { to: "/", icon: CalendarDays, label: "Calendar", emoji: "📅" },
@@ -26,7 +28,7 @@ const platformFilters = [
   { label: "LinkedIn", color: "bg-[hsl(var(--pop-purple))]" },
 ];
 
-function NavSection({ label, items }: { label: string; items: typeof workspaceItems }) {
+function NavSection({ label, items, onNavigate }: { label: string; items: typeof workspaceItems; onNavigate?: () => void }) {
   const location = useLocation();
 
   return (
@@ -40,6 +42,7 @@ function NavSection({ label, items }: { label: string; items: typeof workspaceIt
           <NavLink
             key={to}
             to={to}
+            onClick={onNavigate}
             className={cn(
               "flex items-center gap-2.5 px-6 py-2.5 text-[13px] transition-all border-l-2",
               isActive
@@ -58,6 +61,51 @@ function NavSection({ label, items }: { label: string; items: typeof workspaceIt
 
 export default function AppSidebar() {
   const { signOut, user } = useAuth();
+  const isMobile = useIsMobile();
+  const [open, setOpen] = useState(false);
+
+  if (isMobile) {
+    return (
+      <>
+        {/* Mobile top bar */}
+        <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-foreground px-4 py-3">
+          <Link to="/">
+            <h1 className="font-serif-display text-[24px] font-bold text-primary tracking-[-0.5px] leading-none">
+              caly.
+            </h1>
+          </Link>
+          <button onClick={() => setOpen(!open)} className="text-[hsl(39_66%_90%/0.7)]">
+            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+
+        {/* Mobile drawer */}
+        {open && (
+          <div className="fixed inset-0 z-40 pt-14">
+            <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
+            <aside className="relative h-full w-[260px] bg-foreground overflow-y-auto">
+              <nav className="py-2">
+                <NavSection label="Workspace" items={workspaceItems} onNavigate={() => setOpen(false)} />
+                <NavSection label="Insights" items={insightItems} onNavigate={() => setOpen(false)} />
+                <NavSection label="Team" items={teamItems} onNavigate={() => setOpen(false)} />
+              </nav>
+              <div className="border-t border-[hsl(var(--sand))]/10 p-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/20">
+                    <User className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <p className="truncate text-[11px] font-medium text-[hsl(39_66%_90%/0.7)] flex-1">{user?.email}</p>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-[hsl(39_66%_90%/0.3)] hover:text-destructive hover:bg-transparent" onClick={signOut}>
+                    <LogOut className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            </aside>
+          </div>
+        )}
+      </>
+    );
+  }
 
   return (
     <aside className="flex h-screen w-[220px] flex-col flex-shrink-0 bg-foreground relative overflow-hidden">
@@ -67,9 +115,11 @@ export default function AppSidebar() {
 
       {/* Logo */}
       <div className="px-6 pt-7 pb-7 border-b border-[hsl(var(--sand))]/10 relative z-10">
-        <h1 className="font-serif-display text-[30px] font-bold text-primary tracking-[-0.5px] leading-none">
-          caly.
-        </h1>
+        <Link to="/">
+          <h1 className="font-serif-display text-[30px] font-bold text-primary tracking-[-0.5px] leading-none">
+            caly.
+          </h1>
+        </Link>
         <span className="block mt-0.5 text-[11px] font-sans tracking-[0.15em] text-[hsl(39_66%_90%/0.3)] italic">
           Content Calendar
         </span>
