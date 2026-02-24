@@ -27,15 +27,10 @@ export default function InviteSignup() {
     }
     const validate = async () => {
       try {
-        const resp = await fetch("/api/validate-invite", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ token }),
+        const { data, error } = await supabase.functions.invoke("validate-invite", {
+          body: { token },
         });
-        const data = await resp.json();
-        if (!resp.ok || !data?.valid) {
+        if (error || !data?.valid) {
           setErrorMsg(data?.error || "Invalid invite link.");
         } else {
           setValid(true);
@@ -73,12 +68,8 @@ export default function InviteSignup() {
 
     // Redeem the invite to auto-approve
     if (authData.user) {
-      await fetch("/api/redeem-invite", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token, userId: authData.user.id }),
+      await supabase.functions.invoke("redeem-invite", {
+        body: { token, userId: authData.user.id },
       });
     }
 

@@ -15,6 +15,7 @@ import {
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import calyLogo from "@/assets/caly-logo.png";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -52,10 +53,13 @@ export default function SharedCalendar() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["shared-calendar", token, format(currentDate, "yyyy-MM")],
     queryFn: async () => {
+      // Call Supabase edge function directly (hosted on Supabase, not Vercel)
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const resp = await fetch(
-        `/api/public-calendar?token=${encodeURIComponent(
-          token || ""
-        )}&month=${format(currentDate, "yyyy-MM")}`,
+        `https://${projectId}.supabase.co/functions/v1/public-calendar?token=${token}&month=${format(
+          currentDate,
+          "yyyy-MM"
+        )}`,
         { headers: { "Content-Type": "application/json" } }
       );
       if (!resp.ok) throw new Error("Invalid or expired share link");

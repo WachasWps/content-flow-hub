@@ -29,15 +29,10 @@ export default function InviteLogin() {
 
     const validate = async () => {
       try {
-        const resp = await fetch("/api/validate-invite", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ token }),
+        const { data, error } = await supabase.functions.invoke("validate-invite", {
+          body: { token },
         });
-        const data = await resp.json();
-        if (!resp.ok || !data?.valid) {
+        if (error || !data?.valid) {
           setErrorMsg(data?.error || "Invalid or already used invite link.");
         } else {
           setValid(true);
@@ -68,12 +63,8 @@ export default function InviteLogin() {
 
     // If this is the first time they are using this invite token, mark it as used and auto-approve.
     if (token && data.user) {
-      await fetch("/api/redeem-invite", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token, userId: data.user.id }),
+      await supabase.functions.invoke("redeem-invite", {
+        body: { token, userId: data.user.id },
       });
     }
 

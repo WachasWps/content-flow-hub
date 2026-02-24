@@ -87,39 +87,41 @@ export default function MembersPage() {
   };
   const handleCreateInvite = async () => {
     if (!user) return;
-    try {
-      const response = await fetch("/api/create-invite-token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId: user.id }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create invite");
-      }
-
-      const link = data.inviteUrl as string;
-      setInviteLink(link);
-    } catch (error) {
-      toast({
-        title: "Failed to create invite",
-        description: error instanceof Error ? error.message : "Something went wrong",
-        variant: "destructive",
-      });
+    const { data, error } = await supabase
+      .from("invite_tokens")
+      .insert({ created_by: user.id })
+      .select("token")
+      .single();
+    if (error || !data) {
+      toast({ title: "Failed to create invite", variant: "destructive" });
+      return;
     }
+    const link = `${window.location.origin}/invite?token=${data.token}`;
+    setInviteLink(link);
   };
 
   const handleCopyInvite = () => {
     if (!inviteLink) return;
-    const inviteMessage = `Hey! I'm sharing special access to my content calendar platform — I'm just launching this and open to suggestions. Write me at digicontentcalendar@gmail.com\n\nPlease let me know your feedback!\n\n${inviteLink}`;
-    navigator.clipboard.writeText(inviteMessage);
+    navigator.clipboard.writeText(inviteLink);
     setInviteCopied(true);
-    toast({ title: "Invite message copied!" });
+    toast({ title: "Invite link copied!" });
     setTimeout(() => setInviteCopied(false), 2000);
+  };
+
+  const buildInviteMessage = (link: string) =>
+    `Hey! I'm sharing special access to my Caly content calendar workspace.\n\nYou can join the team here:\n${link}\n\nIf you have any feedback, write me at digicontentcalendar@gmail.com.`;
+
+  const handleSendInviteEmail = () => {
+    if (!inviteLink) return;
+    const subject = "Join our Caly content calendar workspace";
+    const body = buildInviteMessage(inviteLink);
+    window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_blank");
+  };
+
+  const handleSendInviteWhatsApp = () => {
+    if (!inviteLink) return;
+    const text = buildInviteMessage(inviteLink);
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   const filtered = roleFilter === "all" ? members.filter(m => m.isApproved) : members.filter((m) => m.isApproved && m.roles.includes(roleFilter as any));
@@ -160,12 +162,34 @@ export default function MembersPage() {
               ) : (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 rounded-lg border bg-card px-2 py-1.5">
-                    <input readOnly value={inviteLink} className="flex-1 bg-transparent text-[11px] text-foreground outline-none truncate" />
-                    <button onClick={handleCopyInvite} className="shrink-0 p-1 rounded hover:bg-muted">
-                      {inviteCopied ? <Check className="h-3.5 w-3.5 text-pop-green" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+                    <input
+                      readOnly
+                      value={inviteLink}
+                      className="flex-1 bg-transparent text-[11px] text-foreground outline-none truncate"
+                    />
+                    <button onClick={handleCopyInvite} className="shrink-0 p-1 rounded hover:bg-muted" title="Copy invite link">
+                      {inviteCopied ? (
+                        <Check className="h-3.5 w-3.5 text-pop-green" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
                     </button>
                   </div>
                   <p className="text-[10px] text-muted-foreground">Expires in 7 days. Anyone with this link can join.</p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={handleSendInviteEmail}
+                      className="flex-1 rounded-md border border-border bg-background px-3 py-1.5 text-[11px] font-medium hover:bg-card"
+                    >
+                      Send via email
+                    </button>
+                    <button
+                      onClick={handleSendInviteWhatsApp}
+                      className="flex-1 rounded-md border border-border bg-[#25D366]/10 text-[#25D366] px-3 py-1.5 text-[11px] font-semibold hover:bg-[#25D366]/20"
+                    >
+                      Send via WhatsApp
+                    </button>
+                  </div>
                   <button onClick={handleCreateInvite} className="text-[11px] text-primary font-medium hover:underline">
                     Generate new link
                   </button>
