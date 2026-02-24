@@ -153,15 +153,15 @@ export default function CalendarPage() {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Topbar */}
-      <div className="flex items-center justify-between gap-5 border-b border-[hsl(var(--sand))] bg-[hsl(var(--warm-white))] px-8 py-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[hsl(var(--sand))] bg-[hsl(var(--warm-white))] px-4 sm:px-8 py-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <button
             onClick={prevMonth}
             className="flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-[hsl(var(--sand))] bg-transparent text-muted-foreground transition-all hover:border-primary hover:text-primary hover:bg-primary/[0.06]"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <h2 className="font-serif-display text-[22px] font-semibold text-foreground min-w-[210px] text-center">
+          <h2 className="font-serif-display text-[18px] sm:text-[22px] font-semibold text-foreground min-w-0 sm:min-w-[210px] text-center">
             {format(currentDate, "MMMM yyyy")}
           </h2>
           <button
@@ -172,7 +172,7 @@ export default function CalendarPage() {
           </button>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto overflow-x-auto">
           {/* Share popover */}
           <Popover>
             <PopoverTrigger asChild>
@@ -251,7 +251,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Calendar content */}
-      <div className="flex-1 overflow-y-auto p-6 px-8">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-6 sm:px-8">
         {view === "month" ? (
           <div id="calendar-grid">
             {/* Day headers */}
@@ -281,7 +281,7 @@ export default function CalendarPage() {
                     onClick={() => setSelectedDate(day)}
                     style={{ animationDelay: `${i * 0.02}s` }}
                     className={cn(
-                      "relative flex min-h-[120px] flex-col rounded-[10px] p-2.5 text-left transition-all border-[1.5px] border-transparent cursor-pointer animate-in fade-in slide-in-from-bottom-1",
+                      "relative flex min-h-[80px] sm:min-h-[120px] flex-col rounded-[10px] p-1.5 sm:p-2.5 text-left transition-all border-[1.5px] border-transparent cursor-pointer animate-in fade-in slide-in-from-bottom-1",
                       inMonth
                         ? "bg-[hsl(var(--warm-white))] hover:border-[hsl(var(--sand))] hover:shadow-[0_4px_16px_hsl(22_31%_13%/0.07)] hover:-translate-y-px"
                         : "bg-transparent opacity-40",

@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { User, Link2, Palette, Bell, CreditCard, Upload } from "lucide-react";
+import { User, Link2, Palette, Bell, CreditCard, Upload, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/lib/auth";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const sections = [
   { key: "account", label: "Account", icon: User },
@@ -33,33 +34,38 @@ const brandColors = [
 export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState("account");
   const { user } = useAuth();
+  const isMobile = useIsMobile();
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className={cn("flex h-full overflow-hidden", isMobile && "flex-col")}>
       {/* Sub-navigation */}
-      <div className="w-[220px] flex-shrink-0 border-r border-border bg-card/50 p-5">
-        <h2 className="font-serif-display text-[16px] font-semibold text-foreground mb-5">⚙️ Settings</h2>
-        <nav className="space-y-1">
+      <div className={cn(
+        "flex-shrink-0 border-border bg-card/50",
+        isMobile ? "border-b p-3 overflow-x-auto" : "w-[220px] border-r p-5"
+      )}>
+        {!isMobile && <h2 className="font-serif-display text-[16px] font-semibold text-foreground mb-5">⚙️ Settings</h2>}
+        <nav className={cn(isMobile ? "flex gap-1" : "space-y-1")}>
           {sections.map((s) => (
             <button
               key={s.key}
               onClick={() => setActiveSection(s.key)}
               className={cn(
-                "flex items-center gap-2.5 w-full px-3.5 py-2.5 rounded-lg text-[13px] transition-all text-left",
+                "flex items-center gap-2 rounded-lg text-[13px] transition-all whitespace-nowrap",
+                isMobile ? "px-3 py-2" : "w-full px-3.5 py-2.5 text-left",
                 activeSection === s.key
                   ? "bg-primary/10 text-primary font-medium"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               )}
             >
               <s.icon className="h-4 w-4" />
-              {s.label}
+              {isMobile ? s.label.split(" ")[0] : s.label}
             </button>
           ))}
         </nav>
       </div>
 
       {/* Main panel */}
-      <div className="flex-1 overflow-y-auto p-8">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-8">
         {activeSection === "account" && (
           <div className="max-w-lg space-y-6">
             <div>
@@ -108,7 +114,7 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div>
                 <Label className="text-[12px] mb-3 block">Brand Colors</Label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {brandColors.map((c) => (
                     <div key={c.name} className="flex items-center gap-2.5 rounded-lg border border-border bg-[hsl(var(--warm-white))] p-3 cursor-pointer hover:border-primary/50 transition-colors">
                       <div className="w-8 h-8 rounded-lg border border-border" style={{ background: c.value }} />

@@ -48,7 +48,7 @@ export default function DraftsPage() {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Topbar */}
-      <div className="flex items-center justify-between gap-4 border-b border-border bg-[hsl(var(--warm-white))] px-8 py-4">
+      <div className="flex items-center justify-between gap-4 border-b border-border bg-[hsl(var(--warm-white))] px-4 sm:px-8 py-4">
         <h1 className="font-serif-display text-[22px] font-semibold text-foreground">✦ Drafts</h1>
         <button className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-[13px] font-semibold transition-all shadow-[0_2px_8px_hsl(18_63%_47%/0.25)] hover:-translate-y-px hover:shadow-[0_4px_16px_hsl(18_63%_47%/0.35)]">
           <Sparkles className="h-4 w-4" />
@@ -57,8 +57,8 @@ export default function DraftsPage() {
       </div>
 
       {/* Kanban */}
-      <div className="flex-1 overflow-x-auto p-6 px-8">
-        <div className="grid grid-cols-3 gap-5 h-full min-h-0">
+      <div className="flex-1 overflow-x-auto p-3 sm:p-6 sm:px-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 h-full min-h-0">
           {columns.map((col) => {
             const colPosts = posts.filter((p) => col.statuses.includes(p.status));
             return (
