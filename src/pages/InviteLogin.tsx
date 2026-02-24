@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,25 +6,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, UserPlus, Loader2 } from "lucide-react";
+import { CalendarDays, ArrowLeft, Loader2, KeyRound } from "lucide-react";
 import calyLogo from "@/assets/caly-logo.png";
 
-export default function InviteSignup() {
+export default function InviteLogin() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+
   const [validating, setValidating] = useState(true);
   const [valid, setValid] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!token) {
       setValidating(false);
-      setErrorMsg("No invite token provided.");
+      setErrorMsg("No invite token provided. Ask your admin to resend your invite link.");
       return;
     }
+
     const validate = async () => {
       try {
         const resp = await fetch("/api/validate-invite", {
@@ -36,55 +38,46 @@ export default function InviteSignup() {
         });
         const data = await resp.json();
         if (!resp.ok || !data?.valid) {
-          setErrorMsg(data?.error || "Invalid invite link.");
+          setErrorMsg(data?.error || "Invalid or already used invite link.");
         } else {
           setValid(true);
         }
       } catch {
-        setErrorMsg("Failed to validate invite.");
+        setErrorMsg("Failed to validate invite. Please try again or contact your admin.");
       }
       setValidating(false);
     };
+
     validate();
   }, [token]);
 
-  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
-    const fullName = formData.get("fullName") as string;
 
-    const { data: authData, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName },
-        emailRedirectTo: window.location.origin,
-      },
-    });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      toast({ title: "Signup failed", description: error.message, variant: "destructive" });
+      toast({ title: "Login failed", description: error.message, variant: "destructive" });
       setLoading(false);
       return;
     }
 
-    // Redeem the invite to auto-approve
-    if (authData.user) {
+    // If this is the first time they are using this invite token, mark it as used and auto-approve.
+    if (token && data.user) {
       await fetch("/api/redeem-invite", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ token, userId: authData.user.id }),
+        body: JSON.stringify({ token, userId: data.user.id }),
       });
     }
 
-    toast({ title: "Welcome to Caly! ✦", description: "Check your email to confirm, then you're all set." });
-    setLoading(false);
-    navigate("/auth");
+    navigate("/dashboard");
   };
 
   if (validating) {
@@ -98,14 +91,18 @@ export default function InviteSignup() {
   if (!valid) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="text-center space-y-4">
+        <div className="space-y-4 text-center">
           <img src={calyLogo} alt="Caly" className="mx-auto h-10" />
-          <p className="text-destructive font-medium">{errorMsg}</p>
+          <p className="font-medium text-destructive">{errorMsg}</p>
+          <p className="text-xs text-muted-foreground">
+            Make sure you're using the most recent invite email, or ask your team admin to send a new one.
+          </p>
           <Link
-            to="/invite-login"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            to="/auth"
+            className="inline-flex items-center justify-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
-            <ArrowLeft className="h-3 w-3" /> Go to invite login
+            <ArrowLeft className="h-3 w-3" />
+            Go to standard login
           </Link>
         </div>
       </div>
@@ -116,46 +113,43 @@ export default function InviteSignup() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center gap-3">
-          <img src={calyLogo} alt="Caly" className="h-10" />
-          <div className="flex items-center gap-2 rounded-full bg-pop-green/10 px-3 py-1 text-[12px] font-medium text-pop-green">
-            <UserPlus className="h-3.5 w-3.5" />
-            You've been invited!
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/20">
+            <KeyRound className="h-5 w-5 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Join Caly</h1>
-          <p className="text-sm text-muted-foreground">Create your account to get started</p>
+          <h1 className="text-2xl font-extrabold tracking-tight">Invite-only login</h1>
+          <p className="text-sm text-muted-foreground">Sign in with the same email your Caly invite was sent to.</p>
         </div>
 
         <Card className="shadow-xl shadow-primary/5">
-          <form onSubmit={handleSignup}>
+          <form onSubmit={handleLogin}>
             <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full name</Label>
-                <Input id="fullName" name="fullName" required placeholder="Jane Doe" />
+                <Label htmlFor="login-email">Email</Label>
+                <Input id="login-email" name="email" type="email" required placeholder="you@company.com" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" required placeholder="you@company.com" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" name="password" type="password" required minLength={6} placeholder="••••••••" />
+                <Label htmlFor="login-password">Password</Label>
+                <Input id="login-password" name="password" type="password" required placeholder="••••••••" />
               </div>
               <Button type="submit" className="w-full shadow-md shadow-primary/20" disabled={loading}>
-                {loading ? "Creating account…" : "Join the team"}
+                {loading ? "Signing in…" : "Sign in"}
               </Button>
             </CardContent>
           </form>
         </Card>
 
+        <p className="text-center text-xs text-muted-foreground">
+          Lost your invite? Ask your team admin to send you a fresh invite link.
+        </p>
+
         <p className="text-center text-sm text-muted-foreground">
-          <Link
-            to={token ? `/invite-login?token=${encodeURIComponent(token)}` : "/invite-login"}
-            className="inline-flex items-center gap-1 hover:text-foreground"
-          >
-            <ArrowLeft className="h-3 w-3" /> Already have an account? Use invite login
+          <Link to="/" className="inline-flex items-center gap-1 transition-colors hover:text-foreground">
+            <ArrowLeft className="h-3 w-3" />
+            Back to homepage
           </Link>
         </p>
       </div>
     </div>
   );
 }
+

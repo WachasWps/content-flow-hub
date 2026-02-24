@@ -16,6 +16,7 @@ import Landing from "./pages/Landing";
 import PendingApproval from "./pages/PendingApproval";
 import SharedCalendar from "./pages/SharedCalendar";
 import InviteSignup from "./pages/InviteSignup";
+import InviteLogin from "./pages/InviteLogin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+            <Route path="/invite-login" element={<PublicRoute><InviteLogin /></PublicRoute>} />
             <Route path="/pending" element={<PendingRoute><PendingApproval /></PendingRoute>} />
             <Route path="/shared" element={<SharedCalendar />} />
             <Route path="/invite" element={<InviteSignup />} />

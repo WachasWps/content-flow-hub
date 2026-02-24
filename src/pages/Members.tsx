@@ -87,17 +87,30 @@ export default function MembersPage() {
   };
   const handleCreateInvite = async () => {
     if (!user) return;
-    const { data, error } = await supabase
-      .from("invite_tokens")
-      .insert({ created_by: user.id })
-      .select("token")
-      .single();
-    if (error) {
-      toast({ title: "Failed to create invite", variant: "destructive" });
-      return;
+    try {
+      const response = await fetch("/api/create-invite-token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: user.id }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create invite");
+      }
+
+      const link = data.inviteUrl as string;
+      setInviteLink(link);
+    } catch (error) {
+      toast({
+        title: "Failed to create invite",
+        description: error instanceof Error ? error.message : "Something went wrong",
+        variant: "destructive",
+      });
     }
-    const link = `${window.location.origin}/invite?token=${data.token}`;
-    setInviteLink(link);
   };
 
   const handleCopyInvite = () => {
