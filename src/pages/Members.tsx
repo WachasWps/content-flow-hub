@@ -60,6 +60,7 @@ export default function MembersPage() {
           roles: membership ? [membership.role] : [],
           primaryRole: membership?.role || "editor",
           lastActive: profile?.updated_at || profile?.created_at || new Date().toISOString(),
+          membershipId: membership?.id as string | undefined,
         };
       });
     },
@@ -108,6 +109,28 @@ export default function MembersPage() {
   };
 
   const filtered = roleFilter === "all" ? members : members.filter((m) => m.roles.includes(roleFilter as any));
+
+  const handleChangeRole = async (memberId: string, membershipId: string | undefined, newRole: string) => {
+    if (!activeWorkspaceId || !membershipId) return;
+
+    const { error } = await supabase
+      .from("workspace_members")
+      .update({ role: newRole })
+      .eq("id", membershipId)
+      .eq("workspace_id", activeWorkspaceId);
+
+    if (error) {
+      toast({
+        title: "Failed to update role",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({ title: "Role updated" });
+    void refetchMembers();
+  };
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -227,8 +250,25 @@ export default function MembersPage() {
                           {member.name?.charAt(0)?.toUpperCase() || "?"}
                         </div>
                         <h3 className="font-serif-display text-[15px] font-semibold text-foreground mb-1">{member.name}</h3>
-                        <span className={cn("inline-flex px-2.5 py-1 rounded-full text-[11px] font-semibold mb-2", role.bg)}>{role.label}</span>
-                        <p className="font-serif-body italic text-[11px] text-muted-foreground flex items-center justify-center gap-1">
+                        {canManageMembers && member.id !== user?.id ? (
+                          <Select
+                            value={member.primaryRole}
+                            onValueChange={(val) => handleChangeRole(member.id, member.membershipId, val)}
+                          >
+                            <SelectTrigger className="h-8 w-[130px] mx-auto text-[11px] bg-white">
+                              <SelectValue placeholder="Role" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-popover text-left">
+                              <SelectItem value="admin">Admin</SelectItem>
+                              <SelectItem value="content_strategist">Strategist</SelectItem>
+                              <SelectItem value="editor">Editor</SelectItem>
+                              <SelectItem value="social_media_manager">SM Manager</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <span className={cn("inline-flex px-2.5 py-1 rounded-full text-[11px] font-semibold mb-2", role.bg)}>{role.label}</span>
+                        )}
+                        <p className="font-serif-body italic text-[11px] text-muted-foreground flex items-center justify-center gap-1 mt-2">
                           <Clock className="h-3 w-3" />
                           Last active {format(new Date(member.lastActive), "MMM d")}
                         </p>

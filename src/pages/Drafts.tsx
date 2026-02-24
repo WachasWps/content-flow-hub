@@ -45,6 +45,34 @@ export default function DraftsPage() {
     setDraggedPost(null);
   };
 
+  const postIds = useMemo(() => posts.map((p) => p.id), [posts]);
+
+  const { data: postFiles = [] } = useQuery({
+    queryKey: ["post_files_for_drafts", postIds],
+    enabled: postIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("post_files")
+        .select("post_id,file_path")
+        .in("post_id", postIds);
+      if (error) throw error;
+      return data as { post_id: string; file_path: string }[];
+    },
+  });
+
+  const thumbnailMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    postFiles.forEach((f) => {
+      if (!map[f.post_id]) {
+        const { data } = supabase.storage.from("post-assets").getPublicUrl(f.file_path);
+        if (data.publicUrl) {
+          map[f.post_id] = data.publicUrl;
+        }
+      }
+    });
+    return map;
+  }, [postFiles]);
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Topbar */}
@@ -84,6 +112,7 @@ export default function DraftsPage() {
                   )}
                   {colPosts.map((post) => {
                     const plat = platformConfig[post.platform];
+                    const thumb = thumbnailMap[post.id];
                     return (
                       <div
                         key={post.id}
@@ -92,8 +121,12 @@ export default function DraftsPage() {
                         onClick={() => setSelectedPost(post)}
                         className="rounded-lg border border-border bg-[hsl(var(--warm-white))] p-3.5 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]"
                       >
-                        <div className="aspect-[16/9] rounded-md bg-card flex items-center justify-center text-2xl mb-3">
-                          {plat?.icon || "📄"}
+                        <div className="aspect-[16/9] rounded-md bg-card flex items-center justify-center text-2xl mb-3 overflow-hidden">
+                          {thumb ? (
+                            <img src={thumb} alt={post.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <span>{plat?.icon || "📄"}</span>
+                          )}
                         </div>
                         <h3 className="font-serif-body italic text-[13px] text-foreground leading-snug mb-2 line-clamp-2">{post.title}</h3>
                         <div className="flex items-center gap-2">

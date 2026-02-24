@@ -61,6 +61,34 @@ export default function PostsPage() {
     });
   }, [posts, search, platformFilter, statusFilter]);
 
+  const postIds = useMemo(() => posts.map((p) => p.id), [posts]);
+
+  const { data: postFiles = [] } = useQuery({
+    queryKey: ["post_files_for_posts", activeCalendarId, postIds],
+    enabled: !!activeCalendarId && postIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("post_files")
+        .select("post_id,file_path")
+        .in("post_id", postIds);
+      if (error) throw error;
+      return data as { post_id: string; file_path: string }[];
+    },
+  });
+
+  const thumbnailMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    postFiles.forEach((f) => {
+      if (!map[f.post_id]) {
+        const { data } = supabase.storage.from("post-assets").getPublicUrl(f.file_path);
+        if (data.publicUrl) {
+          map[f.post_id] = data.publicUrl;
+        }
+      }
+    });
+    return map;
+  }, [postFiles]);
+
   const handleDuplicate = async (post: Tables<"posts">, e: React.MouseEvent) => {
     e.stopPropagation();
     const { error } = await supabase.from("posts").insert({
@@ -155,6 +183,7 @@ export default function PostsPage() {
                 {filtered.map((post) => {
                   const plat = platformConfig[post.platform];
                   const stat = statusConfig[post.status];
+                  const thumb = thumbnailMap[post.id];
                   return (
                     <tr
                       key={post.id}
@@ -163,8 +192,20 @@ export default function PostsPage() {
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-card flex items-center justify-center text-lg flex-shrink-0">
-                            {post.platform === "instagram" ? "📸" : post.platform === "youtube" ? "▶️" : post.platform === "linkedin" ? "💼" : "🐦"}
+                          <div className="w-10 h-10 rounded-lg bg-card flex items-center justify-center text-lg flex-shrink-0 overflow-hidden">
+                            {thumb ? (
+                              <img src={thumb} alt={post.title} className="w-full h-full object-cover" />
+                            ) : (
+                              <span>
+                                {post.platform === "instagram"
+                                  ? "📸"
+                                  : post.platform === "youtube"
+                                  ? "▶️"
+                                  : post.platform === "linkedin"
+                                  ? "💼"
+                                  : "🐦"}
+                              </span>
+                            )}
                           </div>
                           <span className="font-medium text-foreground truncate max-w-[300px]">{post.title}</span>
                         </div>
@@ -199,14 +240,27 @@ export default function PostsPage() {
             {filtered.map((post) => {
               const plat = platformConfig[post.platform];
               const stat = statusConfig[post.status];
+              const thumb = thumbnailMap[post.id];
               return (
                 <div
                   key={post.id}
                   onClick={() => setSelectedPost(post)}
                   className="group rounded-xl border border-border bg-[hsl(var(--warm-white))] overflow-hidden cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5"
                 >
-                  <div className="aspect-video bg-card flex items-center justify-center text-3xl">
-                    {post.platform === "instagram" ? "📸" : post.platform === "youtube" ? "▶️" : post.platform === "linkedin" ? "💼" : "🐦"}
+                  <div className="aspect-video bg-card flex items-center justify-center text-3xl overflow-hidden">
+                    {thumb ? (
+                      <img src={thumb} alt={post.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>
+                        {post.platform === "instagram"
+                          ? "📸"
+                          : post.platform === "youtube"
+                          ? "▶️"
+                          : post.platform === "linkedin"
+                          ? "💼"
+                          : "🐦"}
+                      </span>
+                    )}
                   </div>
                   <div className="p-3.5">
                     <h3 className="font-medium text-[13px] text-foreground truncate mb-2">{post.title}</h3>

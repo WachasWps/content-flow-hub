@@ -13,7 +13,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ExternalLink, Calendar, Tag, FileText, Trash2, Pencil } from "lucide-react";
+import { ExternalLink, Calendar, Tag, FileText, Trash2, Pencil, Copy } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useQuery } from "@tanstack/react-query";
 
 const statusLabels: Record<string, { label: string; color: string; bg: string }> = {
   idea: { label: "Idea", color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300", bg: "bg-blue-50 dark:bg-blue-950/40" },
@@ -70,6 +71,20 @@ export default function PostDetailDialog({ post, open, onOpenChange, onUpdated }
       setIsEditing(false);
     }
   }, [post, open]);
+
+  const { data: files } = useQuery({
+    queryKey: ["post_files", post?.id],
+    enabled: !!post,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("post_files")
+        .select("*")
+        .eq("post_id", (post as Tables<"posts">).id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as Tables<"post_files">[];
+    },
+  });
 
   if (!post) return null;
 
@@ -198,10 +213,53 @@ export default function PostDetailDialog({ post, open, onOpenChange, onUpdated }
         </div>
 
         <div className="space-y-4 px-6 pb-6 pt-4 max-h-[70vh] overflow-y-auto">
+          {/* Thumbnail / Image */}
+          {files && files.length > 0 && (
+            <div className="w-full">
+              {(() => {
+                const file = files[0];
+                const { data } = supabase.storage.from("post-assets").getPublicUrl(file.file_path);
+                const url = data.publicUrl;
+                if (!url) return null;
+                return (
+                  <img
+                    src={url}
+                    alt="Post thumbnail"
+                    className="w-full max-h-64 rounded-lg border object-cover"
+                  />
+                );
+              })()}
+            </div>
+          )}
+
           {/* Caption */}
           {(post.caption || isEditing) && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Caption</p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Caption
+                </p>
+                {!isEditing && post.caption && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(post.caption || "");
+                        toast({ title: "Caption copied" });
+                      } catch {
+                        toast({
+                          title: "Could not copy caption",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted/60"
+                  >
+                    <Copy className="h-3 w-3" />
+                    Copy
+                  </button>
+                )}
+              </div>
               {isEditing ? (
                 <Textarea
                   rows={3}
@@ -210,7 +268,7 @@ export default function PostDetailDialog({ post, open, onOpenChange, onUpdated }
                   className="text-sm"
                 />
               ) : (
-                <p className="text-sm leading-relaxed">{post.caption}</p>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{post.caption}</p>
               )}
             </div>
           )}

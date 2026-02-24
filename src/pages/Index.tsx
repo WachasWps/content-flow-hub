@@ -11,10 +11,10 @@ import {
   isSameDay,
   addMonths,
   subMonths,
-  getDay,
+  addWeeks,
+  subWeeks,
 } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, Share2, MessageCircle, Link as LinkIcon, Check, Copy, Pencil } from "lucide-react";
-import html2canvas from "html2canvas";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -75,12 +75,12 @@ export default function CalendarPage() {
     [calendarStart.getTime(), calendarEnd.getTime()]
   );
 
-  // Week view days
-  const today = new Date();
-  const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+  // Week view days (driven by currentDate so arrows move weeks)
+  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = useMemo(
-    () => eachDayOfInterval({ start: weekStart, end: endOfWeek(today, { weekStartsOn: 1 }) }),
-    [weekStart.getTime()]
+    () => eachDayOfInterval({ start: weekStart, end: weekEnd }),
+    [weekStart.getTime(), weekEnd.getTime()]
   );
 
   const { data: posts = [], refetch } = useQuery({
@@ -113,13 +113,43 @@ export default function CalendarPage() {
     return map;
   }, [posts]);
 
-  const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
-  const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
+  const postIds = useMemo(() => posts.map((p) => p.id), [posts]);
+
+  const { data: postFiles = [] } = useQuery({
+    queryKey: ["post_files_for_calendar", activeCalendarId, postIds],
+    enabled: !!activeCalendarId && postIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("post_files")
+        .select("post_id,file_path")
+        .in("post_id", postIds);
+      if (error) throw error;
+      return data as { post_id: string; file_path: string }[];
+    },
+  });
+
+  const thumbnailMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    postFiles.forEach((f) => {
+      if (!map[f.post_id]) {
+        const { data } = supabase.storage.from("post-assets").getPublicUrl(f.file_path);
+        if (data.publicUrl) {
+          map[f.post_id] = data.publicUrl;
+        }
+      }
+    });
+    return map;
+  }, [postFiles]);
+
+  const prevMonth = () =>
+    setCurrentDate((prev) => (view === "month" ? subMonths(prev, 1) : subWeeks(prev, 1)));
+  const nextMonth = () =>
+    setCurrentDate((prev) => (view === "month" ? addMonths(prev, 1) : addWeeks(prev, 1)));
 
   const quotes = ["plan something ✦", "rest ◦", "create freely", "brainstorm ✧", "breathe ◌"];
 
-  const handleCreateShareLink = async () => {
-    if (!user || !activeCalendarId) return;
+  const handleCreateShareLink = async (): Promise<string | null> => {
+    if (!user || !activeCalendarId) return null;
     const { data, error } = await supabase
       .from("shared_calendars")
       .insert({
@@ -131,10 +161,11 @@ export default function CalendarPage() {
       .single();
     if (error) {
       toast({ title: "Failed to create share link", variant: "destructive" });
-      return;
+      return null;
     }
     const link = `${window.location.origin}/shared?token=${data.token}`;
     setShareLink(link);
+    return link;
   };
 
   const handleCopyShareLink = () => {
@@ -146,13 +177,21 @@ export default function CalendarPage() {
   };
 
   const handleWhatsAppShare = async () => {
-    if (!shareLink) {
-      await handleCreateShareLink();
+    if (!user || !activeCalendarId) return;
+
+    let link = shareLink;
+    if (!link) {
+      link = await handleCreateShareLink();
+      if (!link) return;
     }
-    const message = `📅 Content Calendar — ${format(
-      currentDate,
-      "MMMM yyyy"
-    )}\nShared via Caly\n${shareLink || ""}`;
+
+    const lines = [
+      `Content Calendar — ${format(currentDate, "MMMM yyyy")}`,
+      "Shared via Caly",
+      link,
+    ];
+
+    const message = lines.join("\n");
     const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
   };
@@ -215,7 +254,9 @@ export default function CalendarPage() {
             <ChevronLeft className="h-4 w-4" />
           </button>
           <h2 className="font-serif-display text-[18px] sm:text-[22px] font-semibold text-foreground min-w-0 sm:min-w-[210px] text-center">
-            {format(currentDate, "MMMM yyyy")}
+            {view === "month"
+              ? format(currentDate, "MMMM yyyy")
+              : `${format(weekStart, "MMM d")} – ${format(weekEnd, "MMM d, yyyy")}`}
           </h2>
           <button
             onClick={nextMonth}
@@ -553,6 +594,7 @@ export default function CalendarPage() {
                         {hr === "9 AM" &&
                           dayPosts.slice(0, 1).map((p) => {
                             const plat = platformConfig[p.platform];
+                            const thumb = thumbnailMap[p.id];
                             return (
                               <div
                                 key={p.id}
@@ -564,10 +606,18 @@ export default function CalendarPage() {
                                 onClick={() => setSelectedPost(p)}
                                 className="rounded-[7px] overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
                               >
-                                <div
-                                  className="w-full aspect-video flex items-center justify-center bg-card text-lg"
-                                >
-                                  {plat?.icon || "📄"}
+                                <div className="w-full aspect-video bg-card flex items-center justify-center">
+                                  {thumb ? (
+                                    <img
+                                      src={thumb}
+                                      alt={p.title}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <span className="text-lg">
+                                      {plat?.icon || "📄"}
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="px-1.5 py-1 bg-[hsl(var(--warm-white))]">
                                   <div className="text-[9px] font-semibold text-foreground truncate mb-0.5">
