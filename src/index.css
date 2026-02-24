@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Space+Grotesk:wght@300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,113 +6,113 @@
 
 @layer base {
   :root {
-    --background: 45 40% 96%;
-    --foreground: 20 25% 12%;
+    --background: 220 30% 98%;
+    --foreground: 222 47% 11%;
 
-    --card: 42 45% 98%;
-    --card-foreground: 20 25% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 42 45% 98%;
-    --popover-foreground: 20 25% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 350 80% 58%;
+    --primary: 330 80% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 45 55% 88%;
-    --secondary-foreground: 20 25% 12%;
+    --secondary: 220 40% 95%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 40 30% 92%;
-    --muted-foreground: 25 12% 48%;
+    --muted: 220 30% 95%;
+    --muted-foreground: 220 15% 50%;
 
-    --accent: 170 65% 45%;
+    --accent: 215 90% 58%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 35 25% 85%;
-    --input: 35 25% 85%;
-    --ring: 350 80% 58%;
+    --border: 220 20% 92%;
+    --input: 220 20% 92%;
+    --ring: 330 80% 60%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    /* Poppy accent colors */
-    --pop-pink: 340 82% 62%;
-    --pop-orange: 25 95% 58%;
-    --pop-yellow: 48 96% 55%;
-    --pop-green: 155 72% 48%;
-    --pop-blue: 215 85% 58%;
-    --pop-purple: 270 72% 62%;
-
-    /* Status colors - punchy */
-    --status-idea: 215 85% 58%;
-    --status-editing: 48 96% 55%;
-    --status-review: 270 72% 62%;
-    --status-ready: 155 72% 48%;
-    --status-posted: 25 12% 55%;
+    /* Status colors */
+    --status-idea: 215 90% 58%;
+    --status-editing: 40 90% 52%;
+    --status-review: 275 70% 58%;
+    --status-ready: 152 60% 48%;
+    --status-posted: 220 10% 52%;
 
     /* Platform colors */
-    --platform-instagram: 340 82% 55%;
-    --platform-youtube: 0 90% 55%;
+    --platform-instagram: 330 80% 55%;
+    --platform-youtube: 0 85% 55%;
     --platform-linkedin: 210 80% 45%;
     --platform-twitter: 200 85% 50%;
 
-    --sidebar-background: 42 45% 98%;
-    --sidebar-foreground: 20 25% 12%;
-    --sidebar-primary: 350 80% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 45 55% 92%;
-    --sidebar-accent-foreground: 350 65% 40%;
-    --sidebar-border: 35 25% 85%;
-    --sidebar-ring: 350 80% 58%;
+    /* Pop accent palette */
+    --pop-pink: 330 80% 60%;
+    --pop-blue: 215 90% 58%;
+    --pop-purple: 275 70% 58%;
+    --pop-green: 152 60% 48%;
+    --pop-yellow: 40 90% 52%;
+    --pop-orange: 20 90% 58%;
 
-    font-family: 'Fredoka', system-ui, sans-serif;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 330 80% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 330 80% 97%;
+    --sidebar-accent-foreground: 330 80% 40%;
+    --sidebar-border: 220 20% 92%;
+    --sidebar-ring: 330 80% 60%;
+
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
   .dark {
-    --background: 20 20% 8%;
-    --foreground: 45 30% 92%;
+    --background: 222 47% 6%;
+    --foreground: 220 30% 95%;
 
-    --card: 20 18% 12%;
-    --card-foreground: 45 30% 92%;
+    --card: 222 40% 10%;
+    --card-foreground: 220 30% 95%;
 
-    --popover: 20 18% 12%;
-    --popover-foreground: 45 30% 92%;
+    --popover: 222 40% 10%;
+    --popover-foreground: 220 30% 95%;
 
-    --primary: 350 80% 62%;
+    --primary: 330 75% 62%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 20 15% 18%;
-    --secondary-foreground: 45 30% 92%;
+    --secondary: 222 30% 15%;
+    --secondary-foreground: 220 30% 95%;
 
-    --muted: 20 15% 18%;
-    --muted-foreground: 30 12% 52%;
+    --muted: 222 30% 15%;
+    --muted-foreground: 220 15% 55%;
 
-    --accent: 170 60% 42%;
+    --accent: 215 85% 55%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 20 15% 20%;
-    --input: 20 15% 20%;
-    --ring: 350 80% 62%;
+    --border: 222 30% 16%;
+    --input: 222 30% 16%;
+    --ring: 330 75% 62%;
 
-    --pop-pink: 340 75% 58%;
-    --pop-orange: 25 88% 55%;
-    --pop-yellow: 48 90% 52%;
-    --pop-green: 155 65% 45%;
-    --pop-blue: 215 78% 55%;
-    --pop-purple: 270 65% 58%;
+    --pop-pink: 330 75% 58%;
+    --pop-blue: 215 85% 55%;
+    --pop-purple: 275 65% 55%;
+    --pop-green: 152 55% 45%;
+    --pop-yellow: 40 85% 50%;
+    --pop-orange: 20 85% 55%;
 
-    --sidebar-background: 20 18% 10%;
-    --sidebar-foreground: 45 30% 92%;
-    --sidebar-primary: 350 80% 62%;
+    --sidebar-background: 222 40% 8%;
+    --sidebar-foreground: 220 30% 95%;
+    --sidebar-primary: 330 75% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 20 20% 16%;
-    --sidebar-accent-foreground: 350 70% 72%;
-    --sidebar-border: 20 15% 20%;
-    --sidebar-ring: 350 80% 62%;
+    --sidebar-accent: 330 50% 12%;
+    --sidebar-accent-foreground: 330 75% 75%;
+    --sidebar-border: 222 30% 16%;
+    --sidebar-ring: 330 75% 62%;
   }
 }
 
@@ -126,19 +126,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
     @apply font-bold;
-  }
-}
-
-@layer utilities {
-  .pop-shadow {
-    box-shadow: 4px 4px 0px 0px hsl(var(--foreground) / 0.12);
-  }
-  .pop-shadow-lg {
-    box-shadow: 6px 6px 0px 0px hsl(var(--foreground) / 0.1);
-  }
-  .pop-border {
-    border-width: 2.5px;
   }
 }
