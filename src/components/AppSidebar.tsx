@@ -69,7 +69,7 @@ export default function AppSidebar() {
       <>
         {/* Mobile top bar */}
         <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-foreground px-4 py-3">
-          <Link to="/">
+        <Link to="/landing">
             <h1 className="font-serif-display text-[24px] font-bold text-primary tracking-[-0.5px] leading-none">
               caly.
             </h1>
@@ -115,7 +115,7 @@ export default function AppSidebar() {
 
       {/* Logo */}
       <div className="px-6 pt-7 pb-7 border-b border-[hsl(var(--sand))]/10 relative z-10">
-        <Link to="/">
+        <Link to="/landing">
           <h1 className="font-serif-display text-[30px] font-bold text-primary tracking-[-0.5px] leading-none">
             caly.
           </h1>
