@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ExternalLink, Calendar, Tag, FileText, User, Image as ImageIcon } from "lucide-react";
+import { ExternalLink, Calendar, Tag, FileText, User, Image as ImageIcon, Trash2 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,6 +64,18 @@ export default function PostDetailDialog({ post, open, onOpenChange, onUpdated }
       toast({ title: "Failed to update status", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Status updated" });
+      onUpdated?.();
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+    const { error } = await supabase.from("posts").delete().eq("id", post.id);
+    if (error) {
+      toast({ title: "Failed to delete", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Post deleted" });
+      onOpenChange(false);
       onUpdated?.();
     }
   };
@@ -175,6 +187,14 @@ export default function PostDetailDialog({ post, open, onOpenChange, onUpdated }
               <p className="text-sm leading-relaxed text-muted-foreground">{post.notes}</p>
             </div>
           )}
+          {/* Delete */}
+          <button
+            onClick={handleDelete}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete Post
+          </button>
         </div>
       </DialogContent>
     </Dialog>
