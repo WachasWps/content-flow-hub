@@ -56,16 +56,16 @@ export default function Auth() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md space-y-6">
+      <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-sm">
-            <CalendarDays className="h-6 w-6 text-primary-foreground" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/20">
+            <CalendarDays className="h-5 w-5 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
-          <p className="text-sm text-muted-foreground">Sign in to your ContentCal workspace.</p>
+          <h1 className="text-2xl font-extrabold tracking-tight">Welcome back</h1>
+          <p className="text-sm text-muted-foreground">Sign in to your workspace</p>
         </div>
 
-        <Card className="shadow-md shadow-primary/5">
+        <Card className="shadow-xl shadow-primary/5">
           <Tabs defaultValue="login">
             <div className="px-6 pt-6 pb-2">
               <TabsList className="grid w-full grid-cols-2">
@@ -85,7 +85,7 @@ export default function Auth() {
                     <Label htmlFor="login-password">Password</Label>
                     <Input id="login-password" name="password" type="password" required placeholder="••••••••" />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full shadow-md shadow-primary/20" disabled={loading}>
                     {loading ? "Signing in…" : "Sign in"}
                   </Button>
                 </CardContent>
@@ -107,7 +107,7 @@ export default function Auth() {
                     <Label htmlFor="signup-password">Password</Label>
                     <Input id="signup-password" name="password" type="password" required minLength={6} placeholder="••••••••" />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full shadow-md shadow-primary/20" disabled={loading}>
                     {loading ? "Creating account…" : "Create account"}
                   </Button>
                 </CardContent>

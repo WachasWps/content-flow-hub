@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isToday, isSameDay } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,19 +10,19 @@ import type { Tables } from "@/integrations/supabase/types";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const statusColors: Record<string, string> = {
-  idea: "bg-pop-blue/15 text-pop-blue",
-  in_editing: "bg-pop-yellow/15 text-pop-yellow",
-  under_review: "bg-pop-purple/15 text-pop-purple",
-  ready_to_post: "bg-pop-green/15 text-pop-green",
-  posted: "bg-muted text-muted-foreground",
+const statusStyles: Record<string, string> = {
+  idea: "bg-pop-blue/10 text-pop-blue border-pop-blue/20",
+  in_editing: "bg-pop-yellow/10 text-pop-yellow border-pop-yellow/20",
+  under_review: "bg-pop-purple/10 text-pop-purple border-pop-purple/20",
+  ready_to_post: "bg-pop-green/10 text-pop-green border-pop-green/20",
+  posted: "bg-muted text-muted-foreground border-muted",
 };
 
-const platformEmoji: Record<string, string> = {
-  instagram: "📸",
-  youtube: "🎬",
-  linkedin: "💼",
-  twitter: "🐦",
+const platformIcon: Record<string, string> = {
+  instagram: "IG",
+  youtube: "YT",
+  linkedin: "LI",
+  twitter: "TW",
 };
 
 export default function CalendarPage() {
@@ -69,18 +69,17 @@ export default function CalendarPage() {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
       <header className="flex items-center justify-between border-b px-6 py-4">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold tracking-tight">{format(currentDate, "MMMM yyyy")}</h1>
           <div className="flex items-center gap-1">
-            <Button variant="outline" size="icon" className="h-8 w-8 pop-border" onClick={prevMonth}>
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={prevMonth}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" className="h-8 pop-border" onClick={goToday}>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={goToday}>
               Today
             </Button>
-            <Button variant="outline" size="icon" className="h-8 w-8 pop-border" onClick={nextMonth}>
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={nextMonth}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -91,17 +90,14 @@ export default function CalendarPage() {
         />
       </header>
 
-      {/* Calendar Grid */}
       <div className="flex-1 overflow-hidden">
         <div className="grid h-full grid-cols-7">
-          {/* Weekday headers */}
           {WEEKDAYS.map((day) => (
-            <div key={day} className="border-b border-r px-2 py-2 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <div key={day} className="border-b border-r px-2 py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {day}
             </div>
           ))}
 
-          {/* Day cells */}
           {days.map((day) => {
             const key = format(day, "yyyy-MM-dd");
             const dayPosts = postsByDate[key] || [];
@@ -110,33 +106,34 @@ export default function CalendarPage() {
                 key={day.toISOString()}
                 onClick={() => setSelectedDate(day)}
                 className={cn(
-                  "relative flex min-h-[100px] flex-col border-b border-r p-2 text-left transition-all hover:bg-accent/20",
+                  "relative flex min-h-[100px] flex-col border-b border-r p-2 text-left transition-colors hover:bg-primary/[0.03]",
                   !isSameMonth(day, currentDate) && "bg-muted/20 text-muted-foreground/40",
-                  selectedDate && isSameDay(day, selectedDate) && "bg-primary/5 ring-2 ring-inset ring-primary/30"
+                  selectedDate && isSameDay(day, selectedDate) && "bg-primary/[0.04] ring-2 ring-inset ring-primary/20"
                 )}
               >
                 <span
                   className={cn(
-                    "inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold",
-                    isToday(day) && "bg-primary text-primary-foreground pop-shadow"
+                    "mb-1 inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold",
+                    isToday(day) && "bg-primary text-primary-foreground shadow-sm shadow-primary/30"
                   )}
                 >
                   {format(day, "d")}
                 </span>
-                <div className="mt-1 space-y-0.5 overflow-hidden">
+                <div className="space-y-0.5 overflow-hidden">
                   {dayPosts.slice(0, 3).map((p) => (
                     <div
                       key={p.id}
                       className={cn(
-                        "truncate rounded-md px-1.5 py-0.5 text-[10px] font-semibold",
-                        statusColors[p.status] || "bg-muted text-muted-foreground"
+                        "flex items-center gap-1 truncate rounded border px-1.5 py-0.5 text-[10px] font-medium",
+                        statusStyles[p.status] || "bg-muted text-muted-foreground"
                       )}
                     >
-                      {platformEmoji[p.platform] || ""} {p.title}
+                      <span className="shrink-0 text-[9px] font-bold opacity-70">{platformIcon[p.platform]}</span>
+                      <span className="truncate">{p.title}</span>
                     </div>
                   ))}
                   {dayPosts.length > 3 && (
-                    <span className="text-[10px] text-muted-foreground font-medium">+{dayPosts.length - 3} more</span>
+                    <span className="text-[10px] text-muted-foreground">+{dayPosts.length - 3} more</span>
                   )}
                 </div>
               </button>
