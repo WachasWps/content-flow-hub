@@ -222,6 +222,7 @@ export default function CalendarPage() {
         post={selectedPost}
         open={!!selectedPost}
         onOpenChange={(open) => { if (!open) setSelectedPost(null); }}
+        onUpdated={() => refetch()}
       />
     </div>
   );

@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExternalLink, Calendar, Tag, FileText, User, Image as ImageIcon } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const statusLabels: Record<string, { label: string; color: string; bg: string }> = {
@@ -26,9 +29,13 @@ interface PostDetailDialogProps {
   post: Tables<"posts"> | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onUpdated?: () => void;
 }
 
-export default function PostDetailDialog({ post, open, onOpenChange }: PostDetailDialogProps) {
+export default function PostDetailDialog({ post, open, onOpenChange, onUpdated }: PostDetailDialogProps) {
+  const { toast } = useToast();
+  const [updating, setUpdating] = useState(false);
+
   const { data: files = [] } = useQuery({
     queryKey: ["post-files", post?.id],
     queryFn: async () => {
@@ -46,6 +53,21 @@ export default function PostDetailDialog({ post, open, onOpenChange }: PostDetai
 
   const status = statusLabels[post.status] || { label: post.status, color: "bg-muted text-muted-foreground", bg: "bg-muted/30" };
 
+  const handleStatusChange = async (newStatus: string) => {
+    setUpdating(true);
+    const { error } = await supabase
+      .from("posts")
+      .update({ status: newStatus as any })
+      .eq("id", post.id);
+    setUpdating(false);
+    if (error) {
+      toast({ title: "Failed to update status", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Status updated" });
+      onUpdated?.();
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
@@ -55,9 +77,18 @@ export default function PostDetailDialog({ post, open, onOpenChange }: PostDetai
               <DialogTitle className="text-xl leading-snug">{post.title}</DialogTitle>
             </div>
             <div className="flex flex-wrap items-center gap-2 pt-2">
-              <Badge variant="secondary" className={cn("text-xs font-semibold", status.color)}>
-                {status.label}
-              </Badge>
+              <Select defaultValue={post.status} onValueChange={handleStatusChange} disabled={updating}>
+                <SelectTrigger className={cn("h-7 w-auto gap-1.5 rounded-full border-0 px-3 text-xs font-semibold", status.color)}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[100] bg-popover">
+                  {Object.entries(statusLabels).map(([key, val]) => (
+                    <SelectItem key={key} value={key} className="text-xs font-medium">
+                      {val.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Badge variant="outline" className="text-xs font-medium border-foreground/20">
                 {platformLabels[post.platform] || post.platform}
               </Badge>
