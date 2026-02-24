@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, LayoutGrid, Users, Zap, ArrowRight, Check } from "lucide-react";
+import calyLogo from "@/assets/caly-logo.png";
 
 const features = [
   {
@@ -42,10 +43,7 @@ export default function Landing() {
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 md:px-16">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent shadow-md shadow-primary/20">
-            <CalendarDays className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="text-lg font-bold">ContentCal</span>
+          <img src={calyLogo} alt="Caly logo" className="h-9 w-auto dark:invert" />
         </div>
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" asChild>
@@ -61,7 +59,7 @@ export default function Landing() {
       <section className="mx-auto max-w-4xl px-6 pb-20 pt-20 text-center md:pt-28 lg:pt-36">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border bg-card px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm">
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-pop-pink to-pop-blue text-[10px] text-white font-bold">✦</span>
-          Built for creative teams
+          Built for creative teams — Caly
         </div>
         <h1 className="mx-auto max-w-3xl text-4xl font-extrabold leading-[1.1] tracking-tight md:text-5xl lg:text-6xl">
           Your content,{" "}
@@ -93,7 +91,7 @@ export default function Landing() {
             <div className="h-3 w-3 rounded-full bg-pop-pink/80" />
             <div className="h-3 w-3 rounded-full bg-pop-yellow/80" />
             <div className="h-3 w-3 rounded-full bg-pop-green/80" />
-            <span className="ml-2 text-xs text-muted-foreground">ContentCal</span>
+            <span className="ml-2 text-xs text-muted-foreground">Caly</span>
           </div>
           <div className="grid grid-cols-7 gap-px bg-border">
             {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
@@ -165,7 +163,7 @@ export default function Landing() {
       </section>
 
       <footer className="border-t px-6 py-8 text-center text-sm text-muted-foreground">
-        © 2026 ContentCal
+        © 2026 Caly
       </footer>
     </div>
   );
