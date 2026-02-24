@@ -49,7 +49,11 @@ export default function Auth() {
     if (error) {
       toast({ title: "Signup failed", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Check your email", description: "We sent you a confirmation link." });
+      // Notify admin about new signup
+      supabase.functions.invoke("notify-signup", {
+        body: { email, fullName },
+      }).catch(() => {});
+      toast({ title: "You're on the waitlist!", description: "We'll review your request and get back to you soon." });
     }
     setLoading(false);
   };
